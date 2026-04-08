@@ -412,25 +412,39 @@ class BrainCleanerApp(ctk.CTk):
         self.create_filter_bubbles(["All"] + found_cats)
 
         # Render sections
-        def render_section(title, color, cats):
+        def render_section(title, desc, color, cats):
             section_cats = [c for c in cats if results.get(c)]
             if not section_cats:
                 return
             hdr = ctk.CTkFrame(self.results_frame, fg_color=color, corner_radius=8)
-            hdr.pack(fill="x", padx=4, pady=(10, 2))
-            ctk.CTkLabel(hdr, text=title, font=ctk.CTkFont(size=12, weight="bold"),
-                         text_color="white").pack(side="left", padx=12, pady=6)
+            hdr.pack(fill="x", padx=4, pady=(10, 8))
+            
+            txt_f = ctk.CTkFrame(hdr, fg_color="transparent")
+            txt_f.pack(side="left", fill="x", expand=True, padx=12, pady=8)
+            
+            ctk.CTkLabel(txt_f, text=title, font=ctk.CTkFont(size=14, weight="bold"),
+                         text_color="white", anchor="w").pack(fill="x")
+            ctk.CTkLabel(txt_f, text=desc, font=ctk.CTkFont(size=10),
+                         text_color="#e0e0e0", anchor="w").pack(fill="x", pady=(2, 0))
+
             count = sum(len(results[c]) for c in section_cats)
             ctk.CTkLabel(hdr, text=f"{count} items",
-                         font=ctk.CTkFont(size=10), text_color="#cccccc"
-                         ).pack(side="right", padx=12, pady=6)
+                         font=ctk.CTkFont(size=13, weight="bold"), text_color="#ffffff"
+                         ).pack(side="right", padx=16, pady=8)
+                         
             for cat in section_cats:
                 self._render_rows(results[cat], cat)
 
         if mode == "ai":
-            render_section("🤖  AI Tools", "#1f538d", self.AI_CATS)
+            self.results_frame.configure(label_text="Scan Results: AI Tools")
+            render_section("🤖 AI Tools Cleanup", 
+                           "Identify and remove cache, logs, and configs left by AI assistants (Gemini, Claude, Cursor...).", 
+                           "#1f538d", self.AI_CATS)
         elif mode == "npm":
-            render_section("📦  NPM Modules", "#2e7d32", self.NPM_CATS)
+            self.results_frame.configure(label_text="Scan Results: NPM Modules")
+            render_section("📦 NPM Modules Cleanup", 
+                           "Free up space by removing heavy node_modules directories from web projects.", 
+                           "#2e7d32", self.NPM_CATS)
 
         self.clean_selected_button.configure(state="normal")
         self.clean_all_button.configure(state="normal")

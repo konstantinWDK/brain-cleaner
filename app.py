@@ -43,13 +43,18 @@ class BrainCleanerApp(ctk.CTk):
         self.info_states = [
             {
                 "title": "💡 Consecuencias del Borrado",
-                "text": "Liberarás espacio valioso, pero se perderán historiales de chat locales y configuraciones de plugins de IA. Algunos asistentes podrían resetear su estado inicial.",
+                "text": "Liberarás espacio valioso, pero podrías perder historiales de chat locales y configuraciones de plugins. Algunos asistentes podrían reiniciarse.",
                 "color": ("#e0e0e0", "#2b2b2b")
             },
             {
                 "title": "🚀 Consejos de Uso",
-                "text": "Escanea semanalmente para optimizar tu disco. Usa 'Select Custom Folder' si quieres limpiar proyectos específicos sin tocar todo el sistema.",
-                "color": ("#d1e7dd", "#0f5132") # Verdosito suave para consejos
+                "text": "Escanea semanalmente para mantener tu sistema optimizado. Usa 'Select Custom Folder' para limpiar solo proyectos técnicos específicos.",
+                "color": ("#d1e7dd", "#0f5132")
+            },
+            {
+                "title": "⚡ Optimización Pro",
+                "text": "Para un borrado total, cierra tu IDE (Cursor, VSCode) antes de limpiar archivos temporales (.cursor, .windsurf). Esto evita bloqueos del sistema.",
+                "color": ("#fff3cd", "#664d03") # Amarillito suave para advertencias pro
             }
         ]
         self.current_info_index = 0
@@ -103,22 +108,37 @@ class BrainCleanerApp(ctk.CTk):
         self.main_container.grid_columnconfigure(0, weight=1)
         self.main_container.grid_rowconfigure(1, weight=1) # Tabview gets weight
 
-        # 1. Dynamic Info Capsule (Animated)
+        # 1. Mini-Slider (Dynamic Info Capsule)
         self.info_bubble = ctk.CTkFrame(self.main_container, fg_color=self.info_states[0]["color"], corner_radius=15, border_width=1)
         self.info_bubble.grid(row=0, column=0, padx=10, pady=(10, 5), sticky="ew")
-        self.info_bubble.grid_columnconfigure(0, weight=1)
+        self.info_bubble.grid_columnconfigure(1, weight=1) # Central column for text
         
+        # Navigation Arrow Left
+        self.left_btn = ctk.CTkButton(self.info_bubble, text="❮", width=30, height=40, font=ctk.CTkFont(size=20), 
+                                     command=lambda: self.navigate_slider(-1), fg_color="transparent", border_width=0, hover_color=("#c0c0c0", "#3d3d3d"))
+        self.left_btn.grid(row=0, column=0, rowspan=2, padx=(10, 0))
+
         self.info_title = ctk.CTkLabel(self.info_bubble, text=self.info_states[0]["title"], font=ctk.CTkFont(size=14, weight="bold"))
-        self.info_title.grid(row=0, column=0, padx=15, pady=(10, 0), sticky="w")
+        self.info_title.grid(row=0, column=1, padx=15, pady=(10, 0), sticky="")
         
         self.info_text = ctk.CTkLabel(self.info_bubble, 
                                      text=self.info_states[0]["text"],
-                                     font=ctk.CTkFont(size=11), justify="left", wraplength=600)
-        self.info_text.grid(row=1, column=0, padx=15, pady=(0, 10), sticky="w")
+                                     font=ctk.CTkFont(size=11), justify="center", wraplength=500)
+        self.info_text.grid(row=1, column=1, padx=15, pady=(0, 5), sticky="")
 
-        self.flip_button = ctk.CTkButton(self.info_bubble, text="🔄 Girar Info", width=100, height=24, font=ctk.CTkFont(size=11), 
-                                        command=self.animate_flip_info, fg_color="transparent", border_width=1)
-        self.flip_button.grid(row=0, column=1, rowspan=2, padx=15, pady=10)
+        # Navigation Arrow Right
+        self.right_btn = ctk.CTkButton(self.info_bubble, text="❯", width=30, height=40, font=ctk.CTkFont(size=20), 
+                                      command=lambda: self.navigate_slider(1), fg_color="transparent", border_width=0, hover_color=("#c0c0c0", "#3d3d3d"))
+        self.right_btn.grid(row=0, column=2, rowspan=2, padx=(0, 10))
+
+        # Pagination Dots Container
+        self.dots_frame = ctk.CTkFrame(self.info_bubble, fg_color="transparent")
+        self.dots_frame.grid(row=2, column=1, pady=(0, 5))
+        self.dots_labels = []
+        for i in range(len(self.info_states)):
+            dot = ctk.CTkLabel(self.dots_frame, text="●" if i == 0 else "○", font=ctk.CTkFont(size=10))
+            dot.pack(side="left", padx=3)
+            self.dots_labels.append(dot)
 
         # 2. Tabview for categories (NOW ON TOP)
         self.tabview = ctk.CTkTabview(self.main_container, command=self.update_info_bubble)
@@ -169,21 +189,27 @@ class BrainCleanerApp(ctk.CTk):
             var.set(value)
         self.log(f"{'Selected' if value else 'Deselected'} all in {category}")
 
-    def animate_flip_info(self):
-        """Creates a simple visual switch for the info capsule"""
-        # Cross-fade like effect (blink)
-        self.info_bubble.configure(border_width=5) # Visual feedback of click
-        self.after(100, lambda: self.info_bubble.configure(border_width=1))
-        self.toggle_info_content()
+    def navigate_slider(self, direction):
+        """Moves the slider state in the specified direction"""
+        self.current_info_index = (self.current_info_index + direction) % len(self.info_states)
+        self.update_slider_ui()
 
-    def toggle_info_content(self):
-        self.current_info_index = (self.current_info_index + 1) % len(self.info_states)
+    def update_slider_ui(self):
         state = self.info_states[self.current_info_index]
+        
+        # Cross-fade blink effect
+        self.info_bubble.configure(border_width=3)
+        self.after(150, lambda: self.info_bubble.configure(border_width=1))
         
         self.info_title.configure(text=state["title"])
         self.info_text.configure(text=state["text"])
         self.info_bubble.configure(fg_color=state["color"])
-        self.log(f"Visualizando: {state['title']}")
+        
+        # Update Dots
+        for i, dot in enumerate(self.dots_labels):
+            dot.configure(text="●" if i == self.current_info_index else "○")
+        
+        self.log(f"Slider: {state['title']}")
 
     def update_info_bubble(self):
         current_tab = self.tabview.get()

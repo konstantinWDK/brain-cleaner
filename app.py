@@ -1,12 +1,24 @@
-import customtkinter as ctk
 import os
+import sys
+
+# macOS Compatibility fixes (must be before ANY gui import)
+if sys.platform == "darwin":
+    # Prevent macOS 11+ from reporting as 10.16 for legacy apps
+    os.environ["SYSTEM_VERSION_COMPAT"] = "0"
+    # Ensure UI performance and log output
+    os.environ["NSUnbufferedIO"] = "YES"
+
+import customtkinter as ctk
 import threading
 from scanner import BrainScanner
 from pathlib import Path
 
 # Theme configuration
-ctk.set_appearance_mode("Dark")
-ctk.set_default_color_theme("blue")
+try:
+    ctk.set_appearance_mode("Dark")
+    ctk.set_default_color_theme("blue")
+except Exception:
+    pass # Safe fallback for environment issues
 
 class BrainCleanerApp(ctk.CTk):
     def __init__(self):

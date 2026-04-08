@@ -22,18 +22,21 @@
 ## 🛠️ Instalación y Requisitos
 
 ### Requisitos Previos
-- Python 3.7 o superior instalado.
+- Python 3.11 o superior instalado (Se recomienda **Homebrew** en macOS para evitar errores de compatibilidad con la interfaz gráfica).
 
 ### Clonar y Configurar
 1. Instala las dependencias necesarias:
    ```bash
-   pip install -r requirements.txt
+   python3.11 -m pip install -r requirements.txt
    ```
 
 2. Ejecuta la aplicación:
    ```bash
-   python3 app.py
+   python3.11 app.py
    ```
+
+> [!TIP]
+> Si al intentar ejecutar con `python3` recibes un error de "abort", asegúrate de estar usando la versión de Homebrew (`brew install python@3.11`).
 
 ---
 

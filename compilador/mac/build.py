@@ -1,38 +1,68 @@
 import os
 import sys
 import subprocess
+import shutil
 from pathlib import Path
 
 # Configuración para MACOS
 PLATFORM = "mac"
+APP_NAME = "BrainCleaner"
+MAIN_FILE = os.path.join("..", "..", "app.py")
 
-def get_customtkinter_path():
-    import customtkinter
-    return os.path.dirname(customtkinter.__file__)
+def get_python_interpreter():
+    """Find the best python interpreter for building (preferring Homebrew/3.11)"""
+    # Check for brew python 3.11 first as it handles macOS GUI better
+    brew_python = "/opt/homebrew/bin/python3.11"
+    if os.path.exists(brew_python):
+        return brew_python
+    return sys.executable
+
+def get_customtkinter_path(python_exe):
+    """Find customtkinter path using the selected interpreter"""
+    cmd = [python_exe, "-c", "import customtkinter, os; print(os.path.dirname(customtkinter.__file__))"]
+    try:
+        result = subprocess.check_output(cmd, text=True).strip()
+        return result
+    except Exception:
+        return None
 
 def build():
-    main_file = os.path.join("..", "..", "app.py")
-    if not os.path.exists(main_file):
-        print(f" [!] No se encontró {main_file}")
+    if not os.path.exists(MAIN_FILE):
+        print(f" [!] No se encontró {MAIN_FILE}")
         return
 
-    ctk_path = get_customtkinter_path()
+    python_exe = get_python_interpreter()
+    print(f" [*] Usando intérprete: {python_exe}")
+    
+    ctk_path = get_customtkinter_path(python_exe)
+    if not ctk_path:
+        print(" [!] No se pudo encontrar customtkinter. ¿Está instalado?")
+        return
+        
     separator = ":"
     
+    # Flags profesionales para PyInstaller en macOS
     cmd = [
-        sys.executable, "-m", "PyInstaller",
-        "--noconsole",
-        "--onefile",
-        "--windowed", # Específico para Mac
-        f"--name=BrainCleaner_{PLATFORM}",
+        python_exe, "-m", "PyInstaller",
+        "--noconfirm",         # No pedir confirmación
+        "--clean",             # Limpiar cache antes de empezar
+        "--windowed",          # Crear bundle .app (indispensable en macOS)
+        "--onefile",           # Un solo archivo ejecutable dentro del bundle
+        f"--name={APP_NAME}",
         f"--add-data={ctk_path}{separator}customtkinter",
-        main_file
+        "--collect-all", "customtkinter",
+        "--collect-all", "darkdetect",
+        "--osx-bundle-identifier", "com.braincleaner.app",
+        "--noconsole",
+        MAIN_FILE
     ]
 
     print(f" [*] Compilando para {PLATFORM.upper()}...")
-    print(" [!] Nota: Debes ejecutar este script en una máquina macOS.")
-    subprocess.check_call(cmd)
-    print(f" [+] Hecho. Revisa la carpeta 'dist'")
+    try:
+        subprocess.check_call(cmd)
+        print(f" [+] Hecho. Revisa la carpeta 'dist/{APP_NAME}.app'")
+    except subprocess.CalledProcessError as e:
+        print(f" [!] Error en la compilación: {e}")
 
 if __name__ == "__main__":
     build()

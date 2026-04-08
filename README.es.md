@@ -27,7 +27,7 @@ python3.11 app.py
 ## Uso
 
 1. **Ubicación** — Elige `🏠 Home`, `💻 Full System` o `📁 Custom Folder` en la barra lateral.
-2. **Modo** — Activa `🤖 AI Tools` y/o `📦 NPM Modules` según lo que quieras escanear.
+2. **Modo** — Elige entre `🤖 AI Tools` o `📦 NPM Modules` según lo que quieras escanear.
 3. **Escanear** — Pulsa `🚀 START SCAN`. Los resultados aparecen en dos secciones diferenciadas.
 4. **Revisar** — Haz clic en `›` para desplegar el contenido de una carpeta. Puedes marcar o desmarcar elementos individuales.
 5. **Limpiar** — Usa `✨ Clean Selected` para los elementos marcados o `🗑️ Clean All (Visible)` para todo lo visible en el filtro activo.

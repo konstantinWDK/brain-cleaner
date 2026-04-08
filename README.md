@@ -27,7 +27,7 @@ python3.11 app.py
 ## Usage
 
 1. **Scope** — Choose `🏠 Home`, `💻 Full System` or `📁 Custom Folder` in the sidebar.
-2. **Mode** — Toggle `🤖 AI Tools` and/or `📦 NPM Modules` to set what to scan.
+2. **Mode** — Choose between `🤖 AI Tools` or `📦 NPM Modules` to set what to scan.
 3. **Scan** — Click `🚀 START SCAN`. Results appear in two labeled sections.
 4. **Review** — Click `›` on any row to expand its subfolders. Check/uncheck individual items.
 5. **Clean** — Use `✨ Clean Selected` for marked items or `🗑️ Clean All (Visible)` for everything in the active filter.

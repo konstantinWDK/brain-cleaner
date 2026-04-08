@@ -61,9 +61,15 @@ class BrainCleanerApp(ctk.CTk):
         self.sidebar.grid_rowconfigure(9, weight=1)
         self.sidebar.grid_columnconfigure(0, weight=1)
 
-        ctk.CTkLabel(self.sidebar, text="🧠 Brain Cleaner",
+        title_f = ctk.CTkFrame(self.sidebar, fg_color="transparent")
+        title_f.grid(row=0, column=0, padx=20, pady=(20, 15), sticky="ew")
+        
+        ctk.CTkLabel(title_f, text="🧠 Brain Cleaner",
                      font=ctk.CTkFont(size=20, weight="bold")
-                     ).grid(row=0, column=0, padx=20, pady=(20, 15), sticky="ew")
+                     ).pack(pady=(0, 2))
+        ctk.CTkLabel(title_f, text="v1.1.0",
+                     font=ctk.CTkFont(size=11, slant="italic"), text_color="#a0a0a0"
+                     ).pack()
 
         # Location
         ctk.CTkLabel(self.sidebar, text="Scan Scope:", anchor="w",

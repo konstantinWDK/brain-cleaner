@@ -85,38 +85,38 @@ class BrainCleanerApp(ctk.CTk):
 
         # BOTTOM CONTROLS SECTION
         self.bottom_sidebar = ctk.CTkFrame(self.sidebar, fg_color="transparent")
-        self.bottom_sidebar.grid(row=5, column=0, padx=10, pady=20, sticky="s")
+        self.bottom_sidebar.grid(row=5, column=0, padx=20, pady=20, sticky="ew") # Changed sticky to ew
+        self.bottom_sidebar.grid_columnconfigure(0, weight=1)
 
         self.run_scan_button = ctk.CTkButton(self.bottom_sidebar, text="START SCAN", 
                                             command=lambda: self.start_scan(self.current_scan_path), 
                                             fg_color="#1f538d", hover_color="#14375e",
                                             width=160, height=140, corner_radius=20,
                                             font=ctk.CTkFont(size=16, weight="bold"),
-                                            image=None, # We use emoji/text for simplicity
                                             compound="top")
         self.run_scan_button.configure(text="🚀\n\nSTART SCAN")
-        self.run_scan_button.grid(row=0, column=0, padx=10, pady=(0, 20))
+        self.run_scan_button.grid(row=0, column=0, padx=0, pady=(0, 20), sticky="ew") # sticky ew
 
         self.stop_scan_button = ctk.CTkButton(self.bottom_sidebar, text="🛑\n\nSTOP SCAN", 
                                              command=self.stop_scan, fg_color="#d32f2f", hover_color="#b71c1c",
                                              width=160, height=140, corner_radius=20,
                                              font=ctk.CTkFont(size=16, weight="bold"),
                                              compound="top")
-        self.stop_scan_button.grid(row=0, column=0, padx=10, pady=(0, 20))
+        self.stop_scan_button.grid(row=0, column=0, padx=0, pady=(0, 20), sticky="ew") # sticky ew
         self.stop_scan_button.grid_remove() 
 
         self.clean_selected_button = ctk.CTkButton(self.bottom_sidebar, text="✨ Publicar Seleccionados", 
                                                  command=self.clean_selected, state="disabled",
                                                  fg_color="#2b71b1", hover_color="#1a4d7d",
                                                  height=40, font=ctk.CTkFont(weight="bold"))
-        self.clean_selected_button.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
+        self.clean_selected_button.grid(row=1, column=0, padx=0, pady=5, sticky="ew")
 
         self.clean_all_button = ctk.CTkButton(self.bottom_sidebar, text="🗑️ Clean All (Visible)", 
                                              command=self.clean_all, state="disabled", 
                                              fg_color="transparent", border_width=1,
                                              text_color=("#d32f2f", "#ff6666"),
                                              height=32)
-        self.clean_all_button.grid(row=2, column=0, padx=10, pady=(5, 15), sticky="ew")
+        self.clean_all_button.grid(row=2, column=0, padx=0, pady=(5, 15), sticky="ew")
 
         self.appearance_mode_label = ctk.CTkLabel(self.sidebar, text="Appearance:", anchor="w", font=ctk.CTkFont(size=10))
         self.appearance_mode_label.grid(row=6, column=0, padx=20, pady=(0, 0))
@@ -165,17 +165,21 @@ class BrainCleanerApp(ctk.CTk):
 
         self.tabview = None # Will be replaced by dynamic filters
         self.residue_rows = [] # To track [(frame, category, var, path)]
+        self.filter_buttons = {} # To track category -> button
+        self.active_filter = "All"
         
-        # 2. Filter Bar (NOW DYNAMIC)
+        # 2. Filter Bar (NOW BUBBLES)
         self.filter_frame = ctk.CTkFrame(self.main_container, fg_color="transparent")
-        self.filter_frame.grid(row=1, column=0, padx=10, pady=(5, 0), sticky="ew")
+        self.filter_frame.grid(row=1, column=0, padx=10, pady=(15, 0), sticky="ew")
         
         self.filter_label = ctk.CTkLabel(self.filter_frame, text="Filters:", font=ctk.CTkFont(size=12, weight="bold"))
         self.filter_label.pack(side="left", padx=(5, 10))
 
-        self.segmented_button = ctk.CTkSegmentedButton(self.filter_frame, values=["No results"], command=self.apply_filter)
-        self.segmented_button.pack(side="left", fill="x", expand=True)
-        self.segmented_button.set("No results")
+        self.bubbles_container = ctk.CTkFrame(self.filter_frame, fg_color="transparent")
+        self.bubbles_container.pack(side="left", fill="x", expand=True)
+        
+        # Initial bubble
+        self.create_filter_bubbles(["All"])
 
         # 3. Unified Results Scroll Frame
         self.results_frame = ctk.CTkScrollableFrame(self.main_container, label_text="Detected AI Residues")
@@ -293,8 +297,7 @@ class BrainCleanerApp(ctk.CTk):
         for frame, cat, var, p in self.residue_rows:
             frame.destroy()
         self.residue_rows = []
-        self.segmented_button.configure(values=["Scanning..."])
-        self.segmented_button.set("Scanning...")
+        self.create_filter_bubbles(["Scanning..."])
 
         self.found_items_by_cat = {}
 
@@ -332,8 +335,7 @@ class BrainCleanerApp(ctk.CTk):
         if total_found == 0:
             self.status_label.configure(text="No residues found.")
             self.log("Scan complete. Nothing found.")
-            self.segmented_button.configure(values=["No results"])
-            self.segmented_button.set("No results")
+            self.create_filter_bubbles(["No results"])
             self.clean_all_button.configure(state="disabled")
             self.clean_selected_button.configure(state="disabled")
             return
@@ -343,9 +345,8 @@ class BrainCleanerApp(ctk.CTk):
         
         # Identify found categories
         found_cats = [cat for cat in self.scanner.categories.keys() if len(results[cat]) > 0]
-        filter_values = ["All"] + found_cats
-        self.segmented_button.configure(values=filter_values)
-        self.segmented_button.set(filter_values[0])
+        self.create_filter_bubbles(["All"] + found_cats)
+        self.active_filter = "All"
         
         # Populate unified list
         for i, (cat, items) in enumerate(results.items()):
@@ -385,18 +386,38 @@ class BrainCleanerApp(ctk.CTk):
         self.clean_all_button.configure(state="normal")
         self.clean_selected_button.configure(state="normal")
 
-    def get_category_color(self, cat):
-        colors = {
-            "Gemini": "#1a73e8",
-            "Claude": "#d97757",
-            "IDE Agents": "#7c4dff",
-            "Other Tools": "#546e7a",
-            "Node Modules": "#388e3c"
-        }
-        return colors.get(cat, "#757575")
+    def create_filter_bubbles(self, categories):
+        # Clear existing bubbles
+        for btn in self.filter_buttons.values():
+            btn.destroy()
+        self.filter_buttons = {}
+
+        for cat in categories:
+            btn = ctk.CTkButton(self.bubbles_container, text=cat, width=80, height=30, 
+                               corner_radius=15, border_width=1, border_color="#757575",
+                               fg_color="transparent", hover_color=("#c0c0c0", "#3d3d3d"),
+                               text_color=("#333333", "#eeeeee"),
+                               command=lambda c=cat: self.apply_filter(c))
+            btn.pack(side="left", padx=5)
+            self.filter_buttons[cat] = btn
+
+        if "All" in self.filter_buttons:
+            self.update_bubble_selection("All")
+
+    def update_bubble_selection(self, selected_cat):
+        self.active_filter = selected_cat
+        for cat, btn in self.filter_buttons.items():
+            if cat == selected_cat:
+                btn.configure(fg_color="#1f538d", border_width=0, text_color="white")
+            else:
+                btn.configure(fg_color="transparent", border_width=1, text_color=("#333333", "#eeeeee"))
 
     def apply_filter(self, selection):
+        if selection in ["Scanning...", "No results"]: return
+        
+        self.update_bubble_selection(selection)
         self.log(f"Filtering by: {selection}")
+        
         for frame, cat, var, path in self.residue_rows:
             if selection == "All" or selection == cat:
                 frame.grid()
@@ -430,7 +451,7 @@ class BrainCleanerApp(ctk.CTk):
         self.update_total_weight_display()
 
     def clean_all(self):
-        selection = self.segmented_button.get()
+        selection = self.active_filter
         self.log(f"Cleaning all in filter: {selection}...")
         
         to_clean = []
@@ -457,8 +478,7 @@ class BrainCleanerApp(ctk.CTk):
             self.status_label.configure(text="Everything clean! ✨")
             self.clean_selected_button.configure(state="disabled")
             self.clean_all_button.configure(state="disabled")
-            self.segmented_button.configure(values=["Clean! ✨"])
-            self.segmented_button.set("Clean! ✨")
+            self.create_filter_bubbles(["Clean! ✨"])
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         ctk.set_appearance_mode(new_appearance_mode)

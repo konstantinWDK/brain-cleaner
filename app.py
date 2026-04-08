@@ -319,11 +319,31 @@ class BrainCleanerApp(ctk.CTk):
 
             for i, (path, size_str, size_bytes) in enumerate(items):
                 var = ctk.BooleanVar(value=False)
-                # Display size in the checkbox text
-                display_text = f"[{size_str}] {path}"
-                cb = ctk.CTkCheckBox(frame, text=display_text, variable=var)
-                cb.grid(row=i+1, column=0, padx=10, pady=5, sticky="w")
-                self.checkboxes_by_cat[cat].append((cb, var, path))
+                
+                # Row Frame for multi-colored item
+                item_frame = ctk.CTkFrame(frame, fg_color="transparent")
+                item_frame.grid(row=i+1, column=0, padx=5, pady=2, sticky="w")
+                
+                cb = ctk.CTkCheckBox(item_frame, text="", variable=var, width=20)
+                cb.pack(side="left", padx=(5, 0))
+                
+                # Size Label (Bold & Orange)
+                size_label = ctk.CTkLabel(item_frame, text=f"[{size_str}] ", 
+                                         text_color="#FF9500", font=ctk.CTkFont(size=11, weight="bold"))
+                size_label.pack(side="left")
+                
+                # Path Label
+                path_label = ctk.CTkLabel(item_frame, text=path, font=ctk.CTkFont(size=11))
+                path_label.pack(side="left")
+
+                # Bind clicks on labels to toggle checkbox
+                def toggle_cb(event, v=var):
+                    v.set(not v.get())
+                
+                size_label.bind("<Button-1>", toggle_cb)
+                path_label.bind("<Button-1>", toggle_cb)
+
+                self.checkboxes_by_cat[cat].append((item_frame, var, path))
         self.clean_all_button.configure(state="normal")
         self.clean_selected_button.configure(state="normal")
 
@@ -331,24 +351,23 @@ class BrainCleanerApp(ctk.CTk):
         to_clean = []
         for cat in self.categories:
             if cat == "All": continue
-            for cb, var, path in self.checkboxes_by_cat[cat]:
+            for item_row, var, path in self.checkboxes_by_cat[cat]:
                 if var.get():
-                    to_clean.append((cat, cb, var, path))
+                    to_clean.append((cat, item_row, var, path))
         
         if not to_clean:
             self.log("No items selected for cleaning.")
             return
 
         cleaned_count = 0
-        for cat, cb, var, path in to_clean:
+        for cat, item_row, var, path in to_clean:
             if self.scanner.delete_folder(path):
                 self.log(f"CLEANED: {path}")
                 cleaned_count += 1
-                # Remove from UI
-                cb.destroy()
+                # Remove from UI (destroys the whole row frame)
+                item_row.destroy()
                 # Remove from tracking
                 self.checkboxes_by_cat[cat] = [item for item in self.checkboxes_by_cat[cat] if item[2] != path]
-                # Also remove from "All" tab tracking if it exists
                 self.checkboxes_by_cat["All"] = [item for item in self.checkboxes_by_cat["All"] if item[2] != path]
             else:
                 self.log(f"FAILED to clean: {path}")
@@ -366,17 +385,17 @@ class BrainCleanerApp(ctk.CTk):
             to_clean = []
             for cat in self.categories:
                 if cat == "All": continue
-                for cb, var, path in self.checkboxes_by_cat[cat]:
-                    to_clean.append((cat, cb, var, path))
+                for item_row, var, path in self.checkboxes_by_cat[cat]:
+                    to_clean.append((cat, item_row, var, path))
         else:
             self.log(f"Cleaning all in {current_tab}...")
-            to_clean = [(current_tab, cb, var, path) for cb, var, path in self.checkboxes_by_cat[current_tab]]
+            to_clean = [(current_tab, item_row, var, path) for item_row, var, path in self.checkboxes_by_cat[current_tab]]
 
         cleaned_count = 0
-        for cat, cb, var, path in to_clean:
+        for cat, item_row, var, path in to_clean:
             if self.scanner.delete_folder(path):
                 cleaned_count += 1
-                cb.destroy()
+                item_row.destroy()
                 # Remove from tracking
                 self.checkboxes_by_cat[cat] = [item for item in self.checkboxes_by_cat[cat] if item[2] != path]
                 self.checkboxes_by_cat["All"] = [item for item in self.checkboxes_by_cat["All"] if item[2] != path]

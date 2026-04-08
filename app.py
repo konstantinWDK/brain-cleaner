@@ -40,23 +40,66 @@ class BrainCleanerApp(ctk.CTk):
             "All": "Vista combinada de todos los residuos de IA detectados en la ubicación seleccionada."
         }
 
-        self.info_states = [
-            {
-                "title": "💡 Consecuencias del Borrado",
-                "text": "Liberarás espacio valioso, pero podrías perder historiales de chat locales y configuraciones de plugins. Algunos asistentes podrían reiniciarse.",
-                "color": ("#e0e0e0", "#2b2b2b")
+        # Translation System
+        self.lang = "es"
+        self.texts = {
+            "es": {
+                "logo": "Brain Cleaner",
+                "scope": "Alcance del Escaneo:",
+                "home": "🏠 Home",
+                "system": "💻 Sistema",
+                "custom": "📁 Carpeta",
+                "custom_btn": "Seleccionar Carpeta",
+                "start_scan": "EMPEZAR ESCANEO",
+                "stop_scan": "DETENER ESCANEO",
+                "scanning": "ESCANEO EN CURSO...",
+                "clean_selected": "✨ Limpiar Seleccionados",
+                "clean_all": "🗑️ Limpiar Todo (Visible)",
+                "appearance": "Apariencia:",
+                "show_logs": "Mostrar Logs de Actividad",
+                "filters": "Filtros:",
+                "ready": "Listo para escanear",
+                "all": "Todos",
+                "found_total": "Hallados {count} ítems. Peso Total: {size}",
+                "consequences_title": "💡 Consecuencias del Borrado",
+                "consequences_text": "Liberarás espacio valioso, pero podrías perder historiales de chat locales y configuraciones de plugins.",
+                "tips_title": "🚀 Consejos de Uso",
+                "tips_text": "Escanea semanalmente para mantener tu sistema optimizado. Usa 'Carpeta' para limpiezas técnicas específicas.",
+                "opt_title": "⚡ Optimización Pro",
+                "opt_text": "Para un borrado total, cierra tu IDE (Cursor, VSCode) antes de limpiar archivos temporales.",
+                "no_results": "Sin resultados",
+                "everything_clean": "¡Todo limpio! ✨"
             },
-            {
-                "title": "🚀 Consejos de Uso",
-                "text": "Escanea semanalmente para mantener tu sistema optimizado. Usa 'Select Custom Folder' para limpiar solo proyectos técnicos específicos.",
-                "color": ("#d1e7dd", "#0f5132")
-            },
-            {
-                "title": "⚡ Optimización Pro",
-                "text": "Para un borrado total, cierra tu IDE (Cursor, VSCode) antes de limpiar archivos temporales (.cursor, .windsurf). Esto evita bloqueos del sistema.",
-                "color": ("#fff3cd", "#664d03") # Amarillito suave para advertencias pro
+            "en": {
+                "logo": "Brain Cleaner",
+                "scope": "Scan Scope:",
+                "home": "🏠 Home",
+                "system": "💻 System",
+                "custom": "📁 Custom",
+                "custom_btn": "Select Custom Folder",
+                "start_scan": "START SCAN",
+                "stop_scan": "STOP SCAN",
+                "scanning": "SCANNING...",
+                "clean_selected": "✨ Clean Selected",
+                "clean_all": "🗑️ Clean All (Visible)",
+                "appearance": "Appearance:",
+                "show_logs": "Show Activity Logs",
+                "filters": "Filters:",
+                "ready": "Ready to scan",
+                "all": "All",
+                "found_total": "Found {count} items. Total Weight: {size}",
+                "consequences_title": "💡 Delete Consequences",
+                "consequences_text": "You will free up space, but might lose local chat histories and plugin configurations.",
+                "tips_title": "🚀 Usage Tips",
+                "tips_text": "Scan weekly to keep your system optimized. Use 'Custom' for specific technical cleanups.",
+                "opt_title": "⚡ Pro Optimization",
+                "opt_text": "For a full cleanup, close your IDE (Cursor, VSCode) before cleaning temporary files.",
+                "no_results": "No results",
+                "everything_clean": "Everything clean! ✨"
             }
-        ]
+        }
+        
+        self.update_info_states()
         self.current_info_index = 0
 
         # Configure grid layout
@@ -122,13 +165,20 @@ class BrainCleanerApp(ctk.CTk):
         self.appearance_mode_label.grid(row=6, column=0, padx=20, pady=(0, 0))
         self.appearance_mode_optionemenu = ctk.CTkOptionMenu(self.sidebar, values=["Light", "Dark", "System"], 
                                                            command=self.change_appearance_mode_event, height=20, font=ctk.CTkFont(size=10))
-        self.appearance_mode_optionemenu.grid(row=7, column=0, padx=20, pady=(5, 10))
+        self.appearance_mode_optionemenu.grid(row=7, column=0, padx=20, pady=(5, 5))
         self.appearance_mode_optionemenu.set("Dark")
 
+        self.lang_label = ctk.CTkLabel(self.sidebar, text="Language:", anchor="w", font=ctk.CTkFont(size=10))
+        self.lang_label.grid(row=8, column=0, padx=20, pady=(5, 0))
+        self.lang_optionmenu = ctk.CTkOptionMenu(self.sidebar, values=["Español", "English"], 
+                                               command=self.change_language_event, height=20, font=ctk.CTkFont(size=10))
+        self.lang_optionmenu.grid(row=9, column=0, padx=20, pady=(5, 10))
+        self.lang_optionmenu.set("Español")
+
         self.show_logs_var = ctk.BooleanVar(value=False)
-        self.show_logs_switch = ctk.CTkSwitch(self.sidebar, text="Show Activity Logs", variable=self.show_logs_var, 
+        self.show_logs_switch = ctk.CTkSwitch(self.sidebar, text=self.texts[self.lang]["show_logs"], variable=self.show_logs_var, 
                                              command=self.toggle_logs, font=ctk.CTkFont(size=10))
-        self.show_logs_switch.grid(row=8, column=0, padx=20, pady=10)
+        self.show_logs_switch.grid(row=10, column=0, padx=20, pady=10)
 
         # Main Area
         self.main_container = ctk.CTkFrame(self, fg_color="transparent")
@@ -183,8 +233,7 @@ class BrainCleanerApp(ctk.CTk):
         self.bubbles_container = ctk.CTkFrame(self.filter_frame, fg_color="transparent")
         self.bubbles_container.pack(side="left", fill="x", expand=True)
         
-        # Initial bubble
-        self.create_filter_bubbles(["All"])
+        # Initial bubbles
 
         # 3. Unified Results Scroll Frame
         self.results_frame = ctk.CTkScrollableFrame(self.main_container, label_text="Detected AI Residues")
@@ -214,6 +263,9 @@ class BrainCleanerApp(ctk.CTk):
         self.log_textbox.insert("0.0", "--- Activity Log ---\n")
         self.log_textbox.configure(state="disabled")
         self.log_textbox.grid_remove() # Hidden by default
+        
+        # Initialize with translations AFTER all widgets are created
+        self.refresh_ui_text()
 
     def log(self, text):
         self.log_textbox.configure(state="normal")
@@ -252,6 +304,78 @@ class BrainCleanerApp(ctk.CTk):
         current_tab = self.tabview.get()
         info = self.category_info.get(current_tab, "")
         self.log(f"Categoría: {current_tab} - {info}")
+
+    def update_info_states(self):
+        t = self.texts[self.lang]
+        self.info_states = [
+            {
+                "title": t["consequences_title"],
+                "text": t["consequences_text"],
+                "color": ("#e0e0e0", "#2b2b2b")
+            },
+            {
+                "title": t["tips_title"],
+                "text": t["tips_text"],
+                "color": ("#d1e7dd", "#0f5132")
+            },
+            {
+                "title": t["opt_title"],
+                "text": t["opt_text"],
+                "color": ("#fff3cd", "#664d03")
+            }
+        ]
+
+    def change_language_event(self, selection):
+        self.lang = "es" if selection == "Español" else "en"
+        self.update_info_states()
+        self.refresh_ui_text()
+        self.log(f"Language changed to: {self.lang}")
+
+    def refresh_ui_text(self):
+        t = self.texts[self.lang]
+        self.logo_label.configure(text=t["logo"])
+        self.location_label.configure(text=t["scope"])
+        
+        # Update segmented button values
+        current_loc = self.location_selector.get()
+        # Hacky check to see if we need to update translated labels
+        loc_vals = [t["home"], t["system"], t["custom"]]
+        self.location_selector.configure(values=loc_vals)
+        # Re-set selection if it was one of the translated ones
+        if "Home" in current_loc or "🏠" in current_loc: self.location_selector.set(t["home"])
+        elif "System" in current_loc or "💻" in current_loc: self.location_selector.set(t["system"])
+        
+        self.custom_folder_button.configure(text=t["custom_btn"])
+        
+        # Footer & Misc
+        self.filter_label.configure(text=t["filters"])
+        self.status_label.configure(text=t["ready"] if self.status_label.cget("text") in ["Listo para escanear", "Ready to scan"] else self.status_label.cget("text"))
+        self.show_logs_switch.configure(text=t["show_logs"])
+        
+        # Update Scan Buttons Text (maintaining the icon format)
+        self.run_scan_button.configure(text=f"🚀\n\n{t['start_scan']}")
+        # Stop scan is usually dynamic but let's set base
+        self.stop_scan_button.configure(text=f"🛑\n\n{t['stop_scan']}")
+        
+        self.clean_selected_button.configure(text=t["clean_selected"])
+        self.clean_all_button.configure(text=t["clean_all"])
+        
+        # If after scan, refresh bubbles
+        if self.filter_buttons:
+            # We keep 'All' translated, other categories stay technical
+            current_filter = self.active_filter
+            new_cats = []
+            for cat in self.filter_buttons.keys():
+                if cat in ["All", "Todos", "¡Todo limpio!", "Everything clean!"]:
+                    new_cats.append(t["all"])
+                else:
+                    new_cats.append(cat)
+            self.create_filter_bubbles(new_cats)
+            
+        # Refresh current info bubble
+        state = self.info_states[self.current_info_index]
+        self.info_title.configure(text=state["title"])
+        self.info_text.configure(text=state["text"])
 
     def change_location_event(self, selection):
         if "Home" in selection:
@@ -314,8 +438,9 @@ class BrainCleanerApp(ctk.CTk):
 
     def animate_scan_button(self):
         if hasattr(self, 'scanning_active') and self.scanning_active:
+            t = self.texts[self.lang]
             icon = self.scan_icons[self.current_icon_idx]
-            self.stop_scan_button.configure(text=f"{icon}\n\nSCANNING...")
+            self.stop_scan_button.configure(text=f"{icon}\n\n{t['scanning']}")
             self.current_icon_idx = (self.current_icon_idx + 1) % len(self.scan_icons)
             self.after(400, self.animate_scan_button)
 
@@ -330,6 +455,8 @@ class BrainCleanerApp(ctk.CTk):
         self.stop_scan_button.grid_remove()
         self.run_scan_button.grid()
         
+        t = self.texts[self.lang]
+        
         if self.interrupt_event.is_set():
             self.status_label.configure(text="Scan stopped by user.")
             self.log("Scan stopped.")
@@ -339,20 +466,20 @@ class BrainCleanerApp(ctk.CTk):
         total_str = self.scanner.format_size(total_bytes)
 
         if total_found == 0:
-            self.status_label.configure(text="No residues found.")
+            self.status_label.configure(text=t["no_results"])
             self.log("Scan complete. Nothing found.")
-            self.create_filter_bubbles(["No results"])
+            self.create_filter_bubbles([t["no_results"]])
             self.clean_all_button.configure(state="disabled")
             self.clean_selected_button.configure(state="disabled")
             return
 
-        self.status_label.configure(text=f"Found {total_found} items. Total Weight: {total_str}")
+        self.status_label.configure(text=t["found_total"].format(count=total_found, size=total_str))
         self.log(f"Scan complete. Found {total_found} items ({total_str}).")
         
         # Identify found categories
         found_cats = [cat for cat in self.scanner.categories.keys() if len(results[cat]) > 0]
-        self.create_filter_bubbles(["All"] + found_cats)
-        self.active_filter = "All"
+        self.create_filter_bubbles([t["all"]] + found_cats)
+        self.active_filter = t["all"]
         
         # Populate unified list
         for i, (cat, items) in enumerate(results.items()):
@@ -419,13 +546,14 @@ class BrainCleanerApp(ctk.CTk):
                 btn.configure(fg_color="transparent", border_width=1, text_color=("#333333", "#eeeeee"))
 
     def apply_filter(self, selection):
-        if selection in ["Scanning...", "No results"]: return
+        if selection in ["Scanning...", "No results", "ESCANEO EN CURSO...", "Sin resultados"]: return
         
         self.update_bubble_selection(selection)
         self.log(f"Filtering by: {selection}")
         
+        t = self.texts[self.lang]
         for frame, cat, var, path in self.residue_rows:
-            if selection == "All" or selection == cat:
+            if selection == t["all"] or selection == cat:
                 frame.grid()
             else:
                 frame.grid_remove()
@@ -458,11 +586,12 @@ class BrainCleanerApp(ctk.CTk):
 
     def clean_all(self):
         selection = self.active_filter
+        t = self.texts[self.lang]
         self.log(f"Cleaning all in filter: {selection}...")
         
         to_clean = []
         for frame, cat, var, path in self.residue_rows:
-            if selection == "All" or selection == cat:
+            if selection == t["all"] or selection == cat:
                 to_clean.append((frame, cat, var, path))
 
         cleaned_count = 0
@@ -480,11 +609,12 @@ class BrainCleanerApp(ctk.CTk):
 
     def update_total_weight_display(self):
         total_remaining = len(self.residue_rows)
+        t = self.texts[self.lang]
         if total_remaining == 0:
-            self.status_label.configure(text="Everything clean! ✨")
+            self.status_label.configure(text=t["everything_clean"])
             self.clean_selected_button.configure(state="disabled")
             self.clean_all_button.configure(state="disabled")
-            self.create_filter_bubbles(["Clean! ✨"])
+            self.create_filter_bubbles([t["everything_clean"]])
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         ctk.set_appearance_mode(new_appearance_mode)

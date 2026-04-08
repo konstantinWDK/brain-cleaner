@@ -40,6 +40,20 @@ class BrainCleanerApp(ctk.CTk):
             "All": "Vista combinada de todos los residuos de IA detectados en la ubicación seleccionada."
         }
 
+        self.info_states = [
+            {
+                "title": "💡 Consecuencias del Borrado",
+                "text": "Liberarás espacio valioso, pero se perderán historiales de chat locales y configuraciones de plugins de IA. Algunos asistentes podrían resetear su estado inicial.",
+                "color": ("#e0e0e0", "#2b2b2b")
+            },
+            {
+                "title": "🚀 Consejos de Uso",
+                "text": "Escanea semanalmente para optimizar tu disco. Usa 'Select Custom Folder' si quieres limpiar proyectos específicos sin tocar todo el sistema.",
+                "color": ("#d1e7dd", "#0f5132") # Verdosito suave para consejos
+            }
+        ]
+        self.current_info_index = 0
+
         # Configure grid layout
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -89,17 +103,22 @@ class BrainCleanerApp(ctk.CTk):
         self.main_container.grid_columnconfigure(0, weight=1)
         self.main_container.grid_rowconfigure(1, weight=1) # Tabview gets weight
 
-        # 1. Info Bubble (Bocadillo)
-        self.info_bubble = ctk.CTkFrame(self.main_container, fg_color=("#e0e0e0", "#2b2b2b"), corner_radius=10)
+        # 1. Dynamic Info Capsule (Animated)
+        self.info_bubble = ctk.CTkFrame(self.main_container, fg_color=self.info_states[0]["color"], corner_radius=15, border_width=1)
         self.info_bubble.grid(row=0, column=0, padx=10, pady=(10, 5), sticky="ew")
+        self.info_bubble.grid_columnconfigure(0, weight=1)
         
-        self.info_title = ctk.CTkLabel(self.info_bubble, text="💡 AI Brain Cleaner Info", font=ctk.CTkFont(size=14, weight="bold"))
-        self.info_title.pack(padx=10, pady=(5, 0), anchor="w")
+        self.info_title = ctk.CTkLabel(self.info_bubble, text=self.info_states[0]["title"], font=ctk.CTkFont(size=14, weight="bold"))
+        self.info_title.grid(row=0, column=0, padx=15, pady=(10, 0), sticky="w")
         
         self.info_text = ctk.CTkLabel(self.info_bubble, 
-                                     text="Esta herramienta detecta 'cerebros' y registros temporales de asistentes IA.\nLimpiarlos ayuda a liberar espacio y mantener la privacidad de tus promts.",
-                                     font=ctk.CTkFont(size=11), justify="left")
-        self.info_text.pack(padx=10, pady=(0, 5), anchor="w")
+                                     text=self.info_states[0]["text"],
+                                     font=ctk.CTkFont(size=11), justify="left", wraplength=600)
+        self.info_text.grid(row=1, column=0, padx=15, pady=(0, 10), sticky="w")
+
+        self.flip_button = ctk.CTkButton(self.info_bubble, text="🔄 Girar Info", width=100, height=24, font=ctk.CTkFont(size=11), 
+                                        command=self.animate_flip_info, fg_color="transparent", border_width=1)
+        self.flip_button.grid(row=0, column=1, rowspan=2, padx=15, pady=10)
 
         # 2. Tabview for categories (NOW ON TOP)
         self.tabview = ctk.CTkTabview(self.main_container, command=self.update_info_bubble)
@@ -150,10 +169,26 @@ class BrainCleanerApp(ctk.CTk):
             var.set(value)
         self.log(f"{'Selected' if value else 'Deselected'} all in {category}")
 
+    def animate_flip_info(self):
+        """Creates a simple visual switch for the info capsule"""
+        # Cross-fade like effect (blink)
+        self.info_bubble.configure(border_width=5) # Visual feedback of click
+        self.after(100, lambda: self.info_bubble.configure(border_width=1))
+        self.toggle_info_content()
+
+    def toggle_info_content(self):
+        self.current_info_index = (self.current_info_index + 1) % len(self.info_states)
+        state = self.info_states[self.current_info_index]
+        
+        self.info_title.configure(text=state["title"])
+        self.info_text.configure(text=state["text"])
+        self.info_bubble.configure(fg_color=state["color"])
+        self.log(f"Visualizando: {state['title']}")
+
     def update_info_bubble(self):
         current_tab = self.tabview.get()
         info = self.category_info.get(current_tab, "")
-        self.info_text.configure(text=info)
+        self.log(f"Categoría: {current_tab} - {info}")
 
     def change_location_event(self, selection):
         if selection == "Home (~/)":

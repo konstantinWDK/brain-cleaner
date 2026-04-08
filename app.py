@@ -83,9 +83,32 @@ class BrainCleanerApp(ctk.CTk):
 
         self._highlight_loc_btn()
 
-        # ── Bottom Sidebar Controls ───────────────────────────────
+        # ── Scan Mode Toggles ─────────────────────────────────────
+        ctk.CTkLabel(self.sidebar, text="Scan Mode:", anchor="w",
+                     font=ctk.CTkFont(size=12, weight="bold")
+                     ).grid(row=5, column=0, padx=20, pady=(14, 4), sticky="ew")
+
+        self.mode_ai_var = ctk.BooleanVar(value=True)
+        self.mode_npm_var = ctk.BooleanVar(value=True)
+
+        self.mode_ai_btn = ctk.CTkCheckBox(
+            self.sidebar, text="🤖  AI Tools",
+            variable=self.mode_ai_var,
+            font=ctk.CTkFont(size=12),
+            checkbox_width=18, checkbox_height=18,
+            checkmark_color="white", fg_color="#1f538d")
+        self.mode_ai_btn.grid(row=6, column=0, padx=24, pady=2, sticky="w")
+
+        self.mode_npm_btn = ctk.CTkCheckBox(
+            self.sidebar, text="📦  NPM Modules",
+            variable=self.mode_npm_var,
+            font=ctk.CTkFont(size=12),
+            checkbox_width=18, checkbox_height=18,
+            checkmark_color="white", fg_color="#388e3c")
+        self.mode_npm_btn.grid(row=7, column=0, padx=24, pady=(2, 4), sticky="w")
+
         bottom = ctk.CTkFrame(self.sidebar, fg_color="transparent")
-        bottom.grid(row=6, column=0, padx=20, pady=20, sticky="ew")
+        bottom.grid(row=8, column=0, padx=20, pady=20, sticky="ew")
         bottom.grid_columnconfigure(0, weight=1)
 
         self.run_scan_button = ctk.CTkButton(
@@ -182,6 +205,21 @@ class BrainCleanerApp(ctk.CTk):
 
         self.bubbles_container = ctk.CTkFrame(filter_bar, fg_color="transparent")
         self.bubbles_container.pack(side="left", fill="x", expand=True)
+
+        # Select All / None buttons (right side of filter bar)
+        ctk.CTkButton(filter_bar, text="☑ All", width=62, height=26,
+                      corner_radius=8, border_width=1, border_color="#757575",
+                      fg_color="transparent", hover_color=("#d0d0d0", "#3a3a3a"),
+                      text_color=("#333333", "#cccccc"), font=ctk.CTkFont(size=11),
+                      command=lambda: self.set_all_visible(True)
+                      ).pack(side="right", padx=(4, 2))
+
+        ctk.CTkButton(filter_bar, text="☐ None", width=68, height=26,
+                      corner_radius=8, border_width=1, border_color="#757575",
+                      fg_color="transparent", hover_color=("#d0d0d0", "#3a3a3a"),
+                      text_color=("#333333", "#cccccc"), font=ctk.CTkFont(size=11),
+                      command=lambda: self.set_all_visible(False)
+                      ).pack(side="right", padx=(2, 4))
 
         # Progress Area
         self.progress_container = ctk.CTkFrame(main, fg_color="transparent")
@@ -305,6 +343,11 @@ class BrainCleanerApp(ctk.CTk):
     def start_scan(self, path):
         self.interrupt_event.clear()
 
+        # Validate at least one mode selected
+        if not self.mode_ai_var.get() and not self.mode_npm_var.get():
+            self.status_label.configure(text="Select at least one scan mode.")
+            return
+
         # Reset results
         for frame, *_ in self.residue_rows:
             frame.destroy()
@@ -320,7 +363,7 @@ class BrainCleanerApp(ctk.CTk):
         self.progress_label.configure(text=f"Scanning {path} ...")
         self.progress_container.grid()
         self.progress_bar.start()
-        self.status_label.configure(text=f"Scanning...")
+        self.status_label.configure(text="Scanning...")
         self.create_filter_bubbles(["Scanning..."])
 
         # Animation
@@ -329,8 +372,15 @@ class BrainCleanerApp(ctk.CTk):
         self.scan_icon_idx = 0
         self._animate_scan()
 
-        self.log(f"Starting scan: {path}")
-        thread = threading.Thread(target=self._run_scan, args=(path,), daemon=True)
+        # Determine active modes
+        active_modes = []
+        if self.mode_ai_var.get():
+            active_modes.append("ai")
+        if self.mode_npm_var.get():
+            active_modes.append("npm")
+
+        self.log(f"Starting scan: {path} | modes: {', '.join(active_modes)}")
+        thread = threading.Thread(target=self._run_scan, args=(path, active_modes), daemon=True)
         thread.start()
 
     def _animate_scan(self):
@@ -340,12 +390,24 @@ class BrainCleanerApp(ctk.CTk):
             self.scan_icon_idx += 1
             self.after(400, self._animate_scan)
 
-    def _run_scan(self, path):
+    def _run_scan(self, path, modes):
         results = self.scanner.find_residues(path, self.interrupt_event)
+        # Filter results by active modes
+        ai_cats = ["Gemini", "Claude", "IDE Agents", "Other Tools"]
+        npm_cats = ["Node Modules"]
+        filtered = {"All": []}
+        if "ai" in modes:
+            for c in ai_cats:
+                filtered[c] = results.get(c, [])
+                filtered["All"] += filtered[c]
+        if "npm" in modes:
+            for c in npm_cats:
+                filtered[c] = results.get(c, [])
+                filtered["All"] += filtered[c]
         self.scanning_active = False
-        self.after(0, lambda: self._finish_scan(results))
+        self.after(0, lambda: self._finish_scan(filtered, modes))
 
-    def _finish_scan(self, results):
+    def _finish_scan(self, results, modes):
         self.progress_bar.stop()
         self.progress_container.grid_remove()
         self.stop_scan_button.grid_remove()
@@ -364,104 +426,124 @@ class BrainCleanerApp(ctk.CTk):
         self.status_label.configure(text=f"Found {total} items — {total_str}")
         self.log(f"Scan complete. {total} items found ({total_str}).")
 
-        # Build category filter list
-        found_cats = [c for c in self.scanner.categories.keys()
-                      if results.get(c)]
+        # Build category filter list (only non-empty found cats)
+        ai_cats = ["Gemini", "Claude", "IDE Agents", "Other Tools"]
+        npm_cats = ["Node Modules"]
+        found_cats = [c for c in (ai_cats + npm_cats) if results.get(c)]
         self.create_filter_bubbles(["All"] + found_cats)
 
-        # Populate rows using pack (avoids grid conflicts inside CTkScrollableFrame)
-        for cat in self.scanner.categories.keys():
-            for path, size_str, _ in results.get(cat, []):
-                var = ctk.BooleanVar(value=False)
+        # ── SECTION RENDERER ─────────────────────────────────────────
+        def render_section(title, color, cats):
+            section_cats = [c for c in cats if results.get(        self.clean_selected_button.configure(state="normal")
+        self.clean_all_button.configure(state="normal")
 
-                # ── WRAPPER: groups parent row + children together ──────────
-                wrapper = ctk.CTkFrame(self.results_frame, fg_color="transparent")
-                wrapper.pack(fill="x", padx=4, pady=2)
+        # Show all by default
+        self.active_filter = "All"
+        self.update_bubble_selection("All")
 
-                # ── PARENT ROW ──────────────────────────────────────────────
-                row = ctk.CTkFrame(wrapper, fg_color=("#f5f5f5", "#2b2b2b"), corner_radius=8)
-                row.pack(fill="x")
-                row.grid_columnconfigure(3, weight=1)
+    def _render_rows(self, items, cat):
+        """Render a list of (path, size_str, size_bytes) items for a given category."""
+        for path, size_str, _ in items:
+            var = ctk.BooleanVar(value=False)
 
-                cb = ctk.CTkCheckBox(row, text="", variable=var, width=24)
-                cb.grid(row=0, column=0, padx=(10, 4), pady=6)
+            wrapper = ctk.CTkFrame(self.results_frame, fg_color="transparent")
+            wrapper.pack(fill="x", padx=4, pady=2)
 
-                badge = ctk.CTkLabel(row, text=f" {cat} ",
-                                     fg_color=self.get_category_color(cat),
-                                     text_color="white", corner_radius=5,
-                                     font=ctk.CTkFont(size=9, weight="bold"))
-                badge.grid(row=0, column=1, padx=(4, 10), pady=6)
+            row = ctk.CTkFrame(wrapper, fg_color=("#f5f5f5", "#2b2b2b"), corner_radius=8)
+            row.pack(fill="x")
+            row.grid_columnconfigure(3, weight=1)
 
-                size_lbl = ctk.CTkLabel(row, text=size_str, text_color="#FF9500",
-                                        font=ctk.CTkFont(size=11, weight="bold"),
-                                        width=72, anchor="e")
-                size_lbl.grid(row=0, column=2, padx=(0, 10), pady=6)
+            cb = ctk.CTkCheckBox(row, text="", variable=var, width=24)
+            cb.grid(row=0, column=0, padx=(10, 4), pady=6)
 
-                path_lbl = ctk.CTkLabel(row, text=path,
-                                        font=ctk.CTkFont(size=11, weight="bold"), anchor="w")
-                path_lbl.grid(row=0, column=3, padx=(0, 4), pady=6, sticky="ew")
+            badge = ctk.CTkLabel(row, text=f" {cat} ",
+                                 fg_color=self.get_category_color(cat),
+                                 text_color="white", corner_radius=5,
+                                 font=ctk.CTkFont(size=9, weight="bold"))
+            badge.grid(row=0, column=1, padx=(4, 10), pady=6)
 
-                # Expand chevron button (improved UI)
-                expand_btn = ctk.CTkButton(
-                    row, text="›", width=28, height=28,
-                    fg_color=("#e0e0e0", "#3a3a3a"),
-                    hover_color=("#c8c8c8", "#484848"),
-                    text_color=("#333333", "#eeeeee"),
-                    corner_radius=8, border_width=0,
-                    font=ctk.CTkFont(size=16, weight="bold"))
-                expand_btn.grid(row=0, column=4, padx=(0, 8), pady=6)
+            size_lbl = ctk.CTkLabel(row, text=size_str, text_color="#FF9500",
+                                    font=ctk.CTkFont(size=11, weight="bold"),
+                                    width=72, anchor="e")
+            size_lbl.grid(row=0, column=2, padx=(0, 10), pady=6)
 
-                # ── CHILDREN FRAME (inline below parent) ───────────────────
-                children_frame = ctk.CTkFrame(wrapper,
-                                              fg_color=("#ececec", "#242424"),
-                                              corner_radius=8)
-                child_rows = []
-                expanded = [False]
+            path_lbl = ctk.CTkLabel(row, text=path,
+                                    font=ctk.CTkFont(size=11, weight="bold"), anchor="w")
+            path_lbl.grid(row=0, column=3, padx=(0, 4), pady=6, sticky="ew")
 
-                # Cascade parent → children
-                def _sync_children(*_, pv=var, cr=child_rows):
-                    state = pv.get()
-                    for _, cv in cr:
-                        cv.set(state)
+            expand_btn = ctk.CTkButton(
+                row, text="›", width=28, height=28,
+                fg_color=("#e0e0e0", "#3a3a3a"),
+                hover_color=("#c8c8c8", "#484848"),
+                text_color=("#333333", "#eeeeee"),
+                corner_radius=8, border_width=0,
+                font=ctk.CTkFont(size=16, weight="bold"))
+            expand_btn.grid(row=0, column=4, padx=(0, 8), pady=6)
 
-                var.trace_add("write", _sync_children)
+            children_frame = ctk.CTkFrame(wrapper, fg_color=("#ececec", "#242424"), corner_radius=8)
+            child_rows = []
+            expanded = [False]
 
-                def _populate_children(p=path, cf=children_frame, cr=child_rows, pv=var):
-                    if cr:
-                        return
+            def _sync_children(*_, pv=var, cr=child_rows):
+                state = pv.get()
+                for _, cv in cr:
+                    cv.set(state)
+
+            var.trace_add("write", _sync_children)
+
+            def _populate_children(p=path, cf=children_frame, cr=child_rows, pv=var):
+                if cr:
+                    return
+                try:
+                    entries = sorted(os.scandir(p), key=lambda e: (not e.is_dir(), e.name.lower()))
+                except PermissionError:
+                    ctk.CTkLabel(cf, text="  ⚠️ Permission denied",
+                                 font=ctk.CTkFont(size=10), text_color="#FF9500"
+                                 ).pack(anchor="w", padx=12, pady=4)
+                    return
+                for entry in entries:
+                    child_var = ctk.BooleanVar(value=pv.get())
+                    child_row = ctk.CTkFrame(cf, fg_color="transparent")
+                    child_row.pack(fill="x", padx=8, pady=1)
+                    child_row.grid_columnconfigure(1, weight=1)
+                    ctk.CTkCheckBox(child_row, text="", variable=child_var, width=20
+                                    ).grid(row=0, column=0, padx=(8, 4), pady=3)
+                    icon = "📁" if entry.is_dir() else "📄"
+                    ctk.CTkLabel(child_row, text=f"{icon}  {entry.name}",
+                                 font=ctk.CTkFont(size=10), anchor="w"
+                                 ).grid(row=0, column=1, padx=2, pady=3, sticky="ew")
                     try:
-                        entries = sorted(os.scandir(p), key=lambda e: (not e.is_dir(), e.name.lower()))
-                    except PermissionError:
-                        ctk.CTkLabel(cf, text="  ⚠️ Permission denied",
-                                     font=ctk.CTkFont(size=10), text_color="#FF9500"
-                                     ).pack(anchor="w", padx=12, pady=4)
-                        return
+                        sz_str = self.scanner.format_size(entry.stat().st_size) if entry.is_file() else ""
+                    except Exception:
+                        sz_str = ""
+                    if sz_str:
+                        ctk.CTkLabel(child_row, text=sz_str, text_color="#FF9500",
+                                     font=ctk.CTkFont(size=10, weight="bold")
+                                     ).grid(row=0, column=2, padx=(0, 10), pady=3)
+                    cr.append((entry.path, child_var))
 
-                    for entry in entries:
-                        child_var = ctk.BooleanVar(value=pv.get())
-                        child_row = ctk.CTkFrame(cf, fg_color="transparent")
-                        child_row.pack(fill="x", padx=8, pady=1)
-                        child_row.grid_columnconfigure(1, weight=1)
+            def _toggle_expand(cf=children_frame, btn=expand_btn, ex=expanded,
+                               populate=_populate_children):
+                populate()
+                if ex[0]:
+                    cf.pack_forget()
+                    btn.configure(text="›")
+                else:
+                    cf.pack(fill="x", pady=(2, 0))
+                    btn.configure(text="⌄")
+                ex[0] = not ex[0]
 
-                        ctk.CTkCheckBox(child_row, text="", variable=child_var, width=20
-                                        ).grid(row=0, column=0, padx=(8, 4), pady=3)
+            expand_btn.configure(command=_toggle_expand)
 
-                        icon = "📁" if entry.is_dir() else "📄"
-                        ctk.CTkLabel(child_row,
-                                     text=f"{icon}  {entry.name}",
-                                     font=ctk.CTkFont(size=10), anchor="w"
-                                     ).grid(row=0, column=1, padx=2, pady=3, sticky="ew")
+            def _toggle(e, v=var):
+                v.set(not v.get())
 
-                        try:
-                            sz_str = self.scanner.format_size(entry.stat().st_size) if entry.is_file() else ""
-                        except Exception:
-                            sz_str = ""
-                        if sz_str:
-                            ctk.CTkLabel(child_row, text=sz_str, text_color="#FF9500",
-                                         font=ctk.CTkFont(size=10, weight="bold")
-                                         ).grid(row=0, column=2, padx=(0, 10), pady=3)
+            for w in (size_lbl, path_lbl, row):
+                w.bind("<Button-1>", _toggle)
 
-                        cr.append((entry.path, child_var))
+            self.residue_rows.append((wrapper, cat, var, path, children_frame, child_rows))
+
+r))
 
                 def _toggle_expand(cf=children_frame, btn=expand_btn, ex=expanded,
                                    populate=_populate_children):
@@ -494,6 +576,14 @@ class BrainCleanerApp(ctk.CTk):
         self.update_bubble_selection("All")
 
     # ── Filters ───────────────────────────────────────────────────
+
+    def set_all_visible(self, state: bool):
+        """Select or deselect all items currently visible (matching active filter)."""
+        for entry in self.residue_rows:
+            wrapper, cat, var = entry[0], entry[1], entry[2]
+            # Only affect items visible in the current filter
+            if self.active_filter in ("All", cat):
+                var.set(state)  # cascades to children via trace
 
     def create_filter_bubbles(self, categories):
         for btn in self.filter_buttons.values():

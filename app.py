@@ -250,41 +250,77 @@ class BrainCleanerApp(ctk.CTk):
                 cb = ctk.CTkCheckBox(frame, text=display_text, variable=var)
                 cb.grid(row=i+1, column=0, padx=10, pady=5, sticky="w")
                 self.checkboxes_by_cat[cat].append((cb, var, path))
-
         self.clean_all_button.configure(state="normal")
         self.clean_selected_button.configure(state="normal")
 
     def clean_selected(self):
-        current_tab = self.tabview.get()
-        selected_paths = [path for cb, var, path in self.checkboxes_by_cat[current_tab] if var.get()]
+        to_clean = []
+        for cat in self.categories:
+            if cat == "All": continue
+            for cb, var, path in self.checkboxes_by_cat[cat]:
+                if var.get():
+                    to_clean.append((cat, cb, var, path))
         
-        if not selected_paths:
-            self.log(f"No items selected for cleaning in {current_tab}.")
+        if not to_clean:
+            self.log("No items selected for cleaning.")
             return
+
+        cleaned_count = 0
+        for cat, cb, var, path in to_clean:
+            if self.scanner.delete_folder(path):
+                self.log(f"CLEANED: {path}")
+                cleaned_count += 1
+                # Remove from UI
+                cb.destroy()
+                # Remove from tracking
+                self.checkboxes_by_cat[cat] = [item for item in self.checkboxes_by_cat[cat] if item[2] != path]
+                # Also remove from "All" tab tracking if it exists
+                self.checkboxes_by_cat["All"] = [item for item in self.checkboxes_by_cat["All"] if item[2] != path]
+            else:
+                self.log(f"FAILED to clean: {path}")
+
+        self.log(f"Clean up complete. {cleaned_count} items removed.")
+        self.status_label.configure(text=f"Cleaned {cleaned_count} items. Rescan recommended.")
         
-        self.execute_cleaning(selected_paths)
+        # Trigger weight update (will recalculate from remaining checkboxes)
+        self.update_total_weight_display()
 
     def clean_all(self):
         current_tab = self.tabview.get()
-        paths = [path for cb, var, path in self.checkboxes_by_cat[current_tab]]
-        self.execute_cleaning(paths)
+        if current_tab == "All":
+            self.log("Cleaning ALL detected residues...")
+            to_clean = []
+            for cat in self.categories:
+                if cat == "All": continue
+                for cb, var, path in self.checkboxes_by_cat[cat]:
+                    to_clean.append((cat, cb, var, path))
+        else:
+            self.log(f"Cleaning all in {current_tab}...")
+            to_clean = [(current_tab, cb, var, path) for cb, var, path in self.checkboxes_by_cat[current_tab]]
 
-    def execute_cleaning(self, paths):
-        count = 0
-        self.log(f"Starting cleaning of {len(paths)} items...")
-        for path in paths:
-            success, msg = self.scanner.delete_item(path)
-            if success:
-                count += 1
-                self.log(f"[OK] {msg}")
+        cleaned_count = 0
+        for cat, cb, var, path in to_clean:
+            if self.scanner.delete_folder(path):
+                cleaned_count += 1
+                cb.destroy()
+                # Remove from tracking
+                self.checkboxes_by_cat[cat] = [item for item in self.checkboxes_by_cat[cat] if item[2] != path]
+                self.checkboxes_by_cat["All"] = [item for item in self.checkboxes_by_cat["All"] if item[2] != path]
             else:
-                self.log(f"[ERROR] {msg}")
-        
-        self.log(f"Cleaning complete. {count}/{len(paths)} items removed.")
-        self.status_label.configure(text=f"Cleaned {count} items.")
-        # We don't refresh all, just clear the log or allow manual refresh
-        # But for better UX, let's suggest a re-scan.
-        self.log("Click Scan to refresh results.")
+                self.log(f"FAILED to clean: {path}")
+
+        self.log(f"Done. Removed {cleaned_count} items.")
+        self.status_label.configure(text=f"Removed {cleaned_count} items.")
+        self.update_total_weight_display()
+
+    def update_total_weight_display(self):
+        # We need to recalculate or just show info from what's left
+        # Actually, let's just update the status label with a summary
+        total_remaining = sum(len(items) for cat, items in self.checkboxes_by_cat.items() if cat != "All")
+        if total_remaining == 0:
+            self.status_label.configure(text="Everything clean! ✨")
+            self.clean_selected_button.configure(state="disabled")
+            self.clean_all_button.configure(state="disabled")
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         ctk.set_appearance_mode(new_appearance_mode)

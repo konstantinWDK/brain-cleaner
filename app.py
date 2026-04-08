@@ -163,24 +163,28 @@ class BrainCleanerApp(ctk.CTk):
             dot.pack(side="left", padx=3)
             self.dots_labels.append(dot)
 
-        # 2. Tabview for categories (NOW ON TOP)
-        self.tabview = ctk.CTkTabview(self.main_container, command=self.update_info_bubble)
-        self.tabview.grid(row=1, column=0, padx=10, pady=5, sticky="nsew")
+        self.tabview = None # Will be replaced by dynamic filters
+        self.residue_rows = [] # To track [(frame, category, var, path)]
         
-        self.categories = list(self.scanner.categories.keys()) + ["All"]
-        self.scrollable_frames = {}
-        for cat in self.categories:
-            tab = self.tabview.add(cat)
-            frame = ctk.CTkScrollableFrame(tab, label_text=f"{cat} Residues")
-            frame.pack(fill="both", expand=True)
-            self.scrollable_frames[cat] = frame
-            self.checkboxes_by_cat[cat] = []
+        # 2. Filter Bar (NOW DYNAMIC)
+        self.filter_frame = ctk.CTkFrame(self.main_container, fg_color="transparent")
+        self.filter_frame.grid(row=1, column=0, padx=10, pady=(5, 0), sticky="ew")
         
-        self.tabview.set("All")
+        self.filter_label = ctk.CTkLabel(self.filter_frame, text="Filters:", font=ctk.CTkFont(size=12, weight="bold"))
+        self.filter_label.pack(side="left", padx=(5, 10))
 
-        # 3. Residue Manager Footer Info
+        self.segmented_button = ctk.CTkSegmentedButton(self.filter_frame, values=["No results"], command=self.apply_filter)
+        self.segmented_button.pack(side="left", fill="x", expand=True)
+        self.segmented_button.set("No results")
+
+        # 3. Unified Results Scroll Frame
+        self.results_frame = ctk.CTkScrollableFrame(self.main_container, label_text="Detected AI Residues")
+        self.results_frame.grid(row=2, column=0, padx=10, pady=10, sticky="nsew")
+        self.main_container.grid_rowconfigure(2, weight=1)
+
+        # 4. Residue Manager Footer Info
         self.footer_info = ctk.CTkFrame(self.main_container, fg_color="transparent")
-        self.footer_info.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
+        self.footer_info.grid(row=3, column=0, padx=10, pady=5, sticky="ew")
         
         self.header = ctk.CTkLabel(self.footer_info, text="AI Residue Manager", font=ctk.CTkFont(size=16, weight="bold"))
         self.header.pack(side="left", padx=5)
@@ -192,12 +196,12 @@ class BrainCleanerApp(ctk.CTk):
         self.status_label.pack(side="right", padx=10)
 
         self.progress_bar = ctk.CTkProgressBar(self.main_container, mode="indeterminate", height=6)
-        self.progress_bar.grid(row=3, column=0, padx=20, pady=(0, 5), sticky="ew")
+        self.progress_bar.grid(row=4, column=0, padx=20, pady=(0, 5), sticky="ew")
         self.progress_bar.grid_remove()
 
-        # 4. Compact Log Area
+        # 5. Compact Log Area
         self.log_textbox = ctk.CTkTextbox(self.main_container, height=80, font=ctk.CTkFont(size=10))
-        self.log_textbox.grid(row=4, column=0, padx=10, pady=(0, 10), sticky="nsew")
+        self.log_textbox.grid(row=5, column=0, padx=10, pady=(0, 10), sticky="nsew")
         self.log_textbox.insert("0.0", "--- Activity Log ---\n")
         self.log_textbox.configure(state="disabled")
 
@@ -282,12 +286,13 @@ class BrainCleanerApp(ctk.CTk):
 
         self.interrupt_event.clear()
         
-        # Clear existing items
-        for cat in self.checkboxes_by_cat:
-            for cb, var, p in self.checkboxes_by_cat[cat]:
-                cb.destroy()
-            self.checkboxes_by_cat[cat] = []
-        
+        # Reset UI
+        for frame, cat, var, p in self.residue_rows:
+            frame.destroy()
+        self.residue_rows = []
+        self.segmented_button.configure(values=["Scanning..."])
+        self.segmented_button.set("Scanning...")
+
         self.found_items_by_cat = {}
 
         # Run scan in background thread
@@ -324,6 +329,8 @@ class BrainCleanerApp(ctk.CTk):
         if total_found == 0:
             self.status_label.configure(text="No residues found.")
             self.log("Scan complete. Nothing found.")
+            self.segmented_button.configure(values=["No results"])
+            self.segmented_button.set("No results")
             self.clean_all_button.configure(state="disabled")
             self.clean_selected_button.configure(state="disabled")
             return
@@ -331,39 +338,32 @@ class BrainCleanerApp(ctk.CTk):
         self.status_label.configure(text=f"Found {total_found} items. Total Weight: {total_str}")
         self.log(f"Scan complete. Found {total_found} items ({total_str}).")
         
-        for cat, items in results.items():
-            frame = self.scrollable_frames[cat]
+        # Identify found categories
+        found_cats = [cat for cat in self.scanner.categories.keys() if len(results[cat]) > 0]
+        filter_values = ["All"] + found_cats
+        self.segmented_button.configure(values=filter_values)
+        self.segmented_button.set(filter_values[0])
+        
+        # Populate unified list
+        for i, (cat, items) in enumerate(results.items()):
+            if cat == "All": continue
             
-            # Calculate category total
-            cat_bytes = sum(item[2] for item in items)
-            cat_str = self.scanner.format_size(cat_bytes)
-            
-            # Add a summary label at the top of the frame
-            top_frame = ctk.CTkFrame(frame, fg_color="transparent")
-            top_frame.grid(row=0, column=0, padx=10, pady=(0, 10), sticky="w")
-            
-            summary_label = ctk.CTkLabel(top_frame, text=f"Total: {len(items)} items | Weight: {cat_str}", font=ctk.CTkFont(weight="bold"))
-            summary_label.pack(side="left", padx=(0, 20))
-            
-            select_all_btn = ctk.CTkButton(top_frame, text="Select All", width=80, height=24, font=ctk.CTkFont(size=11), 
-                                          command=lambda c=cat: self.toggle_selection(c, True))
-            select_all_btn.pack(side="left", padx=5)
-            
-            deselect_all_btn = ctk.CTkButton(top_frame, text="Deselect", width=80, height=24, font=ctk.CTkFont(size=11),
-                                            fg_color="transparent", border_width=1,
-                                            command=lambda c=cat: self.toggle_selection(c, False))
-            deselect_all_btn.pack(side="left", padx=5)
-
-            for i, (path, size_str, size_bytes) in enumerate(items):
+            for path, size_str, size_bytes in items:
                 var = ctk.BooleanVar(value=False)
                 
-                # Row Frame for multi-colored item
-                item_frame = ctk.CTkFrame(frame, fg_color="transparent")
-                item_frame.grid(row=i+1, column=0, padx=5, pady=2, sticky="w")
+                # Row Frame
+                item_frame = ctk.CTkFrame(self.results_frame, fg_color="transparent")
+                item_frame.grid(column=0, padx=5, pady=2, sticky="w")
                 
                 cb = ctk.CTkCheckBox(item_frame, text="", variable=var, width=20)
-                cb.pack(side="left", padx=(5, 0))
+                cb.pack(side="left", padx=(5, 5))
                 
+                # Category Tag (Badge)
+                cat_color = self.get_category_color(cat)
+                cat_badge = ctk.CTkLabel(item_frame, text=f" {cat} ", 
+                                        fg_color=cat_color, text_color="white", corner_radius=6, font=ctk.CTkFont(size=9, weight="bold"))
+                cat_badge.pack(side="left", padx=(0, 10))
+
                 # Size Label (Bold & Orange)
                 size_label = ctk.CTkLabel(item_frame, text=f"[{size_str}] ", 
                                          text_color="#FF9500", font=ctk.CTkFont(size=11, weight="bold"))
@@ -373,69 +373,74 @@ class BrainCleanerApp(ctk.CTk):
                 path_label = ctk.CTkLabel(item_frame, text=path, font=ctk.CTkFont(size=11, weight="bold"))
                 path_label.pack(side="left")
 
-                # Bind clicks on labels to toggle checkbox
-                def toggle_cb(event, v=var):
-                    v.set(not v.get())
-                
+                def toggle_cb(event, v=var): v.set(not v.get())
                 size_label.bind("<Button-1>", toggle_cb)
                 path_label.bind("<Button-1>", toggle_cb)
 
-                self.checkboxes_by_cat[cat].append((item_frame, var, path))
+                self.residue_rows.append((item_frame, cat, var, path))
+
+        self.clean_all_button.configure(state="normal")
+        self.clean_selected_button.configure(state="normal")
+
+    def get_category_color(self, cat):
+        colors = {
+            "Gemini": "#1a73e8",
+            "Claude": "#d97757",
+            "IDE Agents": "#7c4dff",
+            "Other Tools": "#546e7a",
+            "Node Modules": "#388e3c"
+        }
+        return colors.get(cat, "#757575")
+
+    def apply_filter(self, selection):
+        self.log(f"Filtering by: {selection}")
+        for frame, cat, var, path in self.residue_rows:
+            if selection == "All" or selection == cat:
+                frame.grid()
+            else:
+                frame.grid_remove()
         self.clean_all_button.configure(state="normal")
         self.clean_selected_button.configure(state="normal")
 
     def clean_selected(self):
         to_clean = []
-        for cat in self.categories:
-            if cat == "All": continue
-            for item_row, var, path in self.checkboxes_by_cat[cat]:
-                if var.get():
-                    to_clean.append((cat, item_row, var, path))
+        for frame, cat, var, path in self.residue_rows:
+            if var.get():
+                to_clean.append((frame, cat, var, path))
         
         if not to_clean:
             self.log("No items selected for cleaning.")
             return
 
         cleaned_count = 0
-        for cat, item_row, var, path in to_clean:
+        for frame, cat, var, path in to_clean:
             if self.scanner.delete_folder(path):
                 self.log(f"CLEANED: {path}")
                 cleaned_count += 1
-                # Remove from UI (destroys the whole row frame)
-                item_row.destroy()
-                # Remove from tracking
-                self.checkboxes_by_cat[cat] = [item for item in self.checkboxes_by_cat[cat] if item[2] != path]
-                self.checkboxes_by_cat["All"] = [item for item in self.checkboxes_by_cat["All"] if item[2] != path]
+                frame.destroy()
+                self.residue_rows = [r for r in self.residue_rows if r[3] != path]
             else:
                 self.log(f"FAILED to clean: {path}")
 
         self.log(f"Clean up complete. {cleaned_count} items removed.")
         self.status_label.configure(text=f"Cleaned {cleaned_count} items. Rescan recommended.")
-        
-        # Trigger weight update (will recalculate from remaining checkboxes)
         self.update_total_weight_display()
 
     def clean_all(self):
-        current_tab = self.tabview.get()
-        if current_tab == "All":
-            self.log("Cleaning ALL detected residues...")
-            to_clean = []
-            for cat in self.categories:
-                if cat == "All": continue
-                for item_row, var, path in self.checkboxes_by_cat[cat]:
-                    to_clean.append((cat, item_row, var, path))
-        else:
-            self.log(f"Cleaning all in {current_tab}...")
-            to_clean = [(current_tab, item_row, var, path) for item_row, var, path in self.checkboxes_by_cat[current_tab]]
+        selection = self.segmented_button.get()
+        self.log(f"Cleaning all in filter: {selection}...")
+        
+        to_clean = []
+        for frame, cat, var, path in self.residue_rows:
+            if selection == "All" or selection == cat:
+                to_clean.append((frame, cat, var, path))
 
         cleaned_count = 0
-        for cat, item_row, var, path in to_clean:
+        for frame, cat, var, path in to_clean:
             if self.scanner.delete_folder(path):
                 cleaned_count += 1
-                item_row.destroy()
-                # Remove from tracking
-                self.checkboxes_by_cat[cat] = [item for item in self.checkboxes_by_cat[cat] if item[2] != path]
-                self.checkboxes_by_cat["All"] = [item for item in self.checkboxes_by_cat["All"] if item[2] != path]
+                frame.destroy()
+                self.residue_rows = [r for r in self.residue_rows if r[3] != path]
             else:
                 self.log(f"FAILED to clean: {path}")
 
@@ -444,13 +449,13 @@ class BrainCleanerApp(ctk.CTk):
         self.update_total_weight_display()
 
     def update_total_weight_display(self):
-        # We need to recalculate or just show info from what's left
-        # Actually, let's just update the status label with a summary
-        total_remaining = sum(len(items) for cat, items in self.checkboxes_by_cat.items() if cat != "All")
+        total_remaining = len(self.residue_rows)
         if total_remaining == 0:
             self.status_label.configure(text="Everything clean! ✨")
             self.clean_selected_button.configure(state="disabled")
             self.clean_all_button.configure(state="disabled")
+            self.segmented_button.configure(values=["Clean! ✨"])
+            self.segmented_button.set("Clean! ✨")
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         ctk.set_appearance_mode(new_appearance_mode)

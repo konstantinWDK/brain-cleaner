@@ -8,6 +8,7 @@ if sys.platform == "darwin":
 
 import customtkinter as ctk
 import threading
+import subprocess
 from scanner import BrainScanner
 from pathlib import Path
 
@@ -395,7 +396,24 @@ class BrainCleanerApp(ctk.CTk):
                 disp = path
                 path_lbl = ctk.CTkLabel(row, text=disp,
                                         font=ctk.CTkFont(size=11, weight="bold"), anchor="w")
-                path_lbl.grid(row=0, column=3, padx=(0, 10), pady=6, sticky="ew")
+                path_lbl.grid(row=0, column=3, padx=(0, 6), pady=6, sticky="ew")
+
+                # Open in Finder button
+                def open_in_finder(p=path):
+                    if sys.platform == "darwin":
+                        subprocess.run(["open", p])
+                    elif sys.platform == "win32":
+                        subprocess.run(["explorer", p])
+                    else:
+                        subprocess.run(["xdg-open", p])
+
+                open_btn = ctk.CTkButton(
+                    row, text="📂", width=32, height=28,
+                    fg_color="transparent", border_width=1,
+                    hover_color=("#d0d0d0", "#3a3a3a"),
+                    font=ctk.CTkFont(size=14),
+                    command=open_in_finder)
+                open_btn.grid(row=0, column=4, padx=(0, 8), pady=6)
 
                 def _toggle(e, v=var):
                     v.set(not v.get())

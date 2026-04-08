@@ -497,6 +497,7 @@ class BrainCleanerApp(ctk.CTk):
         self.active_filter = t["all"]
         
         # Populate unified list
+        row_idx = 0
         for i, (cat, items) in enumerate(results.items()):
             if cat == "All": continue
             
@@ -505,7 +506,8 @@ class BrainCleanerApp(ctk.CTk):
                 
                 # Row Frame
                 item_frame = ctk.CTkFrame(self.results_frame, fg_color="transparent")
-                item_frame.grid(column=0, padx=5, pady=2, sticky="w")
+                item_frame.grid(row=row_idx, column=0, padx=5, pady=2, sticky="w")
+                row_idx += 1
                 
                 cb = ctk.CTkCheckBox(item_frame, text="", variable=var, width=20)
                 cb.pack(side="left", padx=(5, 5))

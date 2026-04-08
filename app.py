@@ -66,9 +66,9 @@ class BrainCleanerApp(ctk.CTk):
         # Sidebar
         self.sidebar = ctk.CTkFrame(self, width=200, corner_radius=0)
         self.sidebar.grid(row=0, column=0, rowspan=4, sticky="nsew")
-        self.sidebar.grid_rowconfigure(5, weight=1)
+        self.sidebar.grid_rowconfigure(4, weight=1) # Space pusher
 
-        self.logo_label = ctk.CTkLabel(self.sidebar, text="Brain Cleaner", font=ctk.CTkFont(size=20, weight="bold"))
+        self.logo_label = ctk.CTkLabel(self.sidebar, text="Brain Cleaner", font=ctk.CTkFont(size=22, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
 
         # Scan Location Selection
@@ -80,26 +80,49 @@ class BrainCleanerApp(ctk.CTk):
         self.location_optionemenu.set("Full System (/)")
         self.current_scan_path = "/"
 
-        self.custom_folder_button = ctk.CTkButton(self.sidebar, text="Select Custom Folder", command=self.select_custom_folder, fg_color="transparent", border_width=2)
+        self.custom_folder_button = ctk.CTkButton(self.sidebar, text="Select Custom Folder", command=self.select_custom_folder, fg_color="transparent", border_width=1)
         self.custom_folder_button.grid(row=3, column=0, padx=20, pady=10)
 
-        self.run_scan_button = ctk.CTkButton(self.sidebar, text="🚀 START SCAN", command=lambda: self.start_scan(self.current_scan_path), fg_color="#1f538d", hover_color="#14375e")
-        self.run_scan_button.grid(row=4, column=0, padx=20, pady=(20, 10))
+        # BOTTOM CONTROLS SECTION
+        self.bottom_sidebar = ctk.CTkFrame(self.sidebar, fg_color="transparent")
+        self.bottom_sidebar.grid(row=5, column=0, padx=10, pady=20, sticky="s")
 
-        self.stop_scan_button = ctk.CTkButton(self.sidebar, text="Stop Scan", command=self.stop_scan, fg_color="#d32f2f", hover_color="#b71c1c")
-        self.stop_scan_button.grid(row=4, column=0, padx=20, pady=(20, 10)) # Same position as start button
+        self.run_scan_button = ctk.CTkButton(self.bottom_sidebar, text="START SCAN", 
+                                            command=lambda: self.start_scan(self.current_scan_path), 
+                                            fg_color="#1f538d", hover_color="#14375e",
+                                            width=160, height=140, corner_radius=20,
+                                            font=ctk.CTkFont(size=16, weight="bold"),
+                                            image=None, # We use emoji/text for simplicity
+                                            compound="top")
+        self.run_scan_button.configure(text="🚀\n\nSTART SCAN")
+        self.run_scan_button.grid(row=0, column=0, padx=10, pady=(0, 20))
+
+        self.stop_scan_button = ctk.CTkButton(self.bottom_sidebar, text="🛑\n\nSTOP SCAN", 
+                                             command=self.stop_scan, fg_color="#d32f2f", hover_color="#b71c1c",
+                                             width=160, height=140, corner_radius=20,
+                                             font=ctk.CTkFont(size=16, weight="bold"),
+                                             compound="top")
+        self.stop_scan_button.grid(row=0, column=0, padx=10, pady=(0, 20))
         self.stop_scan_button.grid_remove() 
 
-        self.clean_selected_button = ctk.CTkButton(self.sidebar, text="Clean Selected", command=self.clean_selected, state="disabled")
-        self.clean_selected_button.grid(row=5, column=0, padx=20, pady=10)
+        self.clean_selected_button = ctk.CTkButton(self.bottom_sidebar, text="✨ Publicar Seleccionados", 
+                                                 command=self.clean_selected, state="disabled",
+                                                 fg_color="#2b71b1", hover_color="#1a4d7d",
+                                                 height=40, font=ctk.CTkFont(weight="bold"))
+        self.clean_selected_button.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
 
-        self.clean_all_button = ctk.CTkButton(self.sidebar, text="Clean All (Visible)", command=self.clean_all, state="disabled", fg_color="#d32f2f", hover_color="#b71c1c")
-        self.clean_all_button.grid(row=6, column=0, padx=20, pady=10)
+        self.clean_all_button = ctk.CTkButton(self.bottom_sidebar, text="🗑️ Clean All (Visible)", 
+                                             command=self.clean_all, state="disabled", 
+                                             fg_color="transparent", border_width=1,
+                                             text_color=("#d32f2f", "#ff6666"),
+                                             height=32)
+        self.clean_all_button.grid(row=2, column=0, padx=10, pady=(5, 15), sticky="ew")
 
-        self.appearance_mode_label = ctk.CTkLabel(self.sidebar, text="Appearance Mode:", anchor="w")
-        self.appearance_mode_label.grid(row=8, column=0, padx=20, pady=(10, 0))
-        self.appearance_mode_optionemenu = ctk.CTkOptionMenu(self.sidebar, values=["Light", "Dark", "System"], command=self.change_appearance_mode_event)
-        self.appearance_mode_optionemenu.grid(row=9, column=0, padx=20, pady=(10, 10))
+        self.appearance_mode_label = ctk.CTkLabel(self.sidebar, text="Appearance:", anchor="w", font=ctk.CTkFont(size=10))
+        self.appearance_mode_label.grid(row=6, column=0, padx=20, pady=(0, 0))
+        self.appearance_mode_optionemenu = ctk.CTkOptionMenu(self.sidebar, values=["Light", "Dark", "System"], 
+                                                           command=self.change_appearance_mode_event, height=20, font=ctk.CTkFont(size=10))
+        self.appearance_mode_optionemenu.grid(row=7, column=0, padx=20, pady=(5, 10))
         self.appearance_mode_optionemenu.set("Dark")
 
         # Main Area
@@ -251,6 +274,12 @@ class BrainCleanerApp(ctk.CTk):
         self.status_label.configure(text=f"Scanning {path}... Please wait.")
         self.log(f"Starting scan on {path}...")
         
+        # Start button animation
+        self.scanning_active = True
+        self.scan_icons = ["🔍", "⚡", "🚀", "🛰️", "☄️"]
+        self.current_icon_idx = 0
+        self.animate_scan_button()
+
         self.interrupt_event.clear()
         
         # Clear existing items
@@ -266,8 +295,16 @@ class BrainCleanerApp(ctk.CTk):
         thread.daemon = True
         thread.start()
 
+    def animate_scan_button(self):
+        if hasattr(self, 'scanning_active') and self.scanning_active:
+            icon = self.scan_icons[self.current_icon_idx]
+            self.stop_scan_button.configure(text=f"{icon}\n\nSCANNING...")
+            self.current_icon_idx = (self.current_icon_idx + 1) % len(self.scan_icons)
+            self.after(400, self.animate_scan_button)
+
     def run_scan(self, path):
         results = self.scanner.find_residues(path, self.interrupt_event)
+        self.scanning_active = False # Stop animation
         self.after(0, lambda: self.finish_scan(results))
 
     def finish_scan(self, results):

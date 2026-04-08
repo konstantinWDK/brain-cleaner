@@ -125,6 +125,11 @@ class BrainCleanerApp(ctk.CTk):
         self.appearance_mode_optionemenu.grid(row=7, column=0, padx=20, pady=(5, 10))
         self.appearance_mode_optionemenu.set("Dark")
 
+        self.show_logs_var = ctk.BooleanVar(value=False)
+        self.show_logs_switch = ctk.CTkSwitch(self.sidebar, text="Show Activity Logs", variable=self.show_logs_var, 
+                                             command=self.toggle_logs, font=ctk.CTkFont(size=10))
+        self.show_logs_switch.grid(row=8, column=0, padx=20, pady=10)
+
         # Main Area
         self.main_container = ctk.CTkFrame(self, fg_color="transparent")
         self.main_container.grid(row=0, column=1, rowspan=4, padx=10, pady=10, sticky="nsew")
@@ -208,6 +213,7 @@ class BrainCleanerApp(ctk.CTk):
         self.log_textbox.grid(row=5, column=0, padx=10, pady=(0, 10), sticky="nsew")
         self.log_textbox.insert("0.0", "--- Activity Log ---\n")
         self.log_textbox.configure(state="disabled")
+        self.log_textbox.grid_remove() # Hidden by default
 
     def log(self, text):
         self.log_textbox.configure(state="normal")
@@ -482,6 +488,12 @@ class BrainCleanerApp(ctk.CTk):
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         ctk.set_appearance_mode(new_appearance_mode)
+
+    def toggle_logs(self):
+        if self.show_logs_var.get():
+            self.log_textbox.grid()
+        else:
+            self.log_textbox.grid_remove()
 
 if __name__ == "__main__":
     app = BrainCleanerApp()

@@ -17,13 +17,17 @@
 - 📦 **Revisor de NPM** — Libera espacio en disco detectando y eliminando carpetas `node_modules` de proyectos web.
 - 🔍 **Selección Granular** — Árbol de archivos interactivo para revisar y excluir dependencias individuales antes de borrar.
 
-## Instalación
+## 🚀 Inicio Rápido (Instalación y Ejecución)
 
+Para ejecutar la aplicación de forma segura desde el código fuente, usa estos comandos:
+
+### 1. Instalar Dependencias
 ```bash
-# 1. Instalar dependencias
 python3.11 -m pip install -r requirements.txt
+```
 
-# 2. Ejecutar
+### 2. Arrancar la Aplicación
+```bash
 python3.11 app.py
 ```
 
@@ -47,7 +51,7 @@ python3.11 app.py
 |---|---|
 | **Gemini** | Caché de la CLI / API de Google Gemini |
 | **Claude** | Logs y configuración de Anthropic Claude |
-| **IDE Agents** | Cursor, Windsurf, Roo-Code, Claude-Dev |
+| **IDE Agents** | Cursor, Windsurf, Trae, Roo-Code, Claude-Dev |
 | **Other Tools** | Herramientas de IA no categorizadas |
 | **Node Modules** | Carpetas `node_modules` en proyectos Node.js |
 

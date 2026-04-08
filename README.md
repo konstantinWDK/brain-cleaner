@@ -17,13 +17,17 @@
 - 📦 **NPM Cleaner** — Reclaims disk space by detecting and removing heavy `node_modules` folders.
 - 🔍 **Granular Selection** — Interactive file tree to review and exclude individual files from deletion.
 
-## Installation
+## 🚀 Quick Start
 
+To securely run the application from source, type these commands in your console:
+
+### 1. Install Dependencies
 ```bash
-# 1. Install dependencies
 python3.11 -m pip install -r requirements.txt
+```
 
-# 2. Run
+### 2. Run the App
+```bash
 python3.11 app.py
 ```
 
@@ -47,7 +51,7 @@ python3.11 app.py
 |---|---|
 | **Gemini** | Google Gemini CLI / API cache |
 | **Claude** | Anthropic Claude logs & config |
-| **IDE Agents** | Cursor, Windsurf, Roo-Code, Claude-Dev |
+| **IDE Agents** | Cursor, Windsurf, Trae, Roo-Code, Claude-Dev |
 | **Other Tools** | Uncategorized AI tools |
 | **Node Modules** | `node_modules` in Node.js projects |
 

@@ -16,7 +16,8 @@ class BrainScanner:
                 ".tabnine", 
                 ".supermaven", 
                 ".blackbox",
-                ".amazon-codewhisperer"
+                ".amazon-codewhisperer",
+                ".trae"
             ],
             "Other Tools": [
                 ".openai", 

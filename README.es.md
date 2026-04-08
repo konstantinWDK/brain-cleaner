@@ -11,6 +11,12 @@
 
 **Brain Cleaner** es una utilidad de escritorio para encontrar y eliminar archivos residuales dejados por herramientas de IA (Gemini, Claude, Cursor, Windsurf…) y carpetas `node_modules` pesadas.
 
+## 🎯 Características Principales
+
+- 🤖 **Limpiador de IA** — Detecta y elimina caché, logs y configuraciones de asistentes de IA.
+- 📦 **Revisor de NPM** — Libera espacio en disco detectando y eliminando carpetas `node_modules` de proyectos web.
+- 🔍 **Selección Granular** — Árbol de archivos interactivo para revisar y excluir dependencias individuales antes de borrar.
+
 ## Instalación
 
 ```bash

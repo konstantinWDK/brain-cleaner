@@ -11,6 +11,12 @@
 
 **Brain Cleaner** is a desktop utility to find and remove residual files left by AI tools (Gemini, Claude, Cursor, Windsurf…) and heavy `node_modules` folders from your system.
 
+## 🎯 Core Features
+
+- 🤖 **AI Tools Cleaner** — Detects and cleans configuration, cache, and logs from AI assistants.
+- 📦 **NPM Cleaner** — Reclaims disk space by detecting and removing heavy `node_modules` folders.
+- 🔍 **Granular Selection** — Interactive file tree to review and exclude individual files from deletion.
+
 ## Installation
 
 ```bash

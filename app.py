@@ -115,16 +115,28 @@ class BrainCleanerApp(ctk.CTk):
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
 
         # Scan Location Selection
-        self.location_label = ctk.CTkLabel(self.sidebar, text="Scan Scope:", anchor="w", font=ctk.CTkFont(weight="bold"))
+        self.location_label = ctk.CTkLabel(self.sidebar, text=self.texts[self.lang]["scope"], anchor="w", font=ctk.CTkFont(weight="bold"))
         self.location_label.grid(row=1, column=0, padx=20, pady=(10, 5))
         
-        self.location_selector = ctk.CTkSegmentedButton(self.sidebar, values=["🏠 Home", "💻 System", "📁 Custom"], command=self.change_location_event)
-        self.location_selector.grid(row=2, column=0, padx=20, pady=5, sticky="ew")
-        self.location_selector.set("🏠 Home")
-        self.current_scan_path = str(Path.home())
+        self.home_btn = ctk.CTkButton(self.sidebar, text=self.texts[self.lang]["home"], 
+                                     command=lambda: self.change_location_event("Home"),
+                                     fg_color="transparent", border_width=1)
+        self.home_btn.grid(row=2, column=0, padx=20, pady=5, sticky="ew")
 
-        self.custom_folder_button = ctk.CTkButton(self.sidebar, text="Select Custom Folder", command=self.select_custom_folder, fg_color="transparent", border_width=1)
-        self.custom_folder_button.grid(row=3, column=0, padx=20, pady=10)
+        self.system_btn = ctk.CTkButton(self.sidebar, text=self.texts[self.lang]["system"], 
+                                       command=lambda: self.change_location_event("System"),
+                                       fg_color="transparent", border_width=1)
+        self.system_btn.grid(row=3, column=0, padx=20, pady=5, sticky="ew")
+
+        self.custom_btn = ctk.CTkButton(self.sidebar, text=self.texts[self.lang]["custom_btn"], 
+                                       command=self.select_custom_folder,
+                                       fg_color="transparent", border_width=1)
+        self.custom_btn.grid(row=4, column=0, padx=20, pady=5, sticky="ew")
+
+        # Set default active style
+        self.current_loc_type = "Home"
+        self.update_location_buttons_ui()
+        self.current_scan_path = str(Path.home())
 
         # BOTTOM CONTROLS SECTION
         self.bottom_sidebar = ctk.CTkFrame(self.sidebar, fg_color="transparent")
@@ -336,16 +348,10 @@ class BrainCleanerApp(ctk.CTk):
         self.logo_label.configure(text=t["logo"])
         self.location_label.configure(text=t["scope"])
         
-        # Update segmented button values
-        current_loc = self.location_selector.get()
-        # Hacky check to see if we need to update translated labels
-        loc_vals = [t["home"], t["system"], t["custom"]]
-        self.location_selector.configure(values=loc_vals)
-        # Re-set selection if it was one of the translated ones
-        if "Home" in current_loc or "🏠" in current_loc: self.location_selector.set(t["home"])
-        elif "System" in current_loc or "💻" in current_loc: self.location_selector.set(t["system"])
-        
-        self.custom_folder_button.configure(text=t["custom_btn"])
+        # Update buttons
+        self.home_btn.configure(text=t["home"])
+        self.system_btn.configure(text=t["system"])
+        self.custom_btn.configure(text=t["custom_btn"])
         
         # Footer & Misc
         self.filter_label.configure(text=t["filters"])
@@ -378,27 +384,36 @@ class BrainCleanerApp(ctk.CTk):
         self.info_text.configure(text=state["text"])
 
     def change_location_event(self, selection):
-        if "Home" in selection:
+        self.current_loc_type = selection
+        if selection == "Home":
             self.current_scan_path = str(Path.home())
-        elif "System" in selection:
+        elif selection == "System":
             self.current_scan_path = "/"
-        elif "Custom" in selection:
-            self.select_custom_folder()
-            return
         
+        self.update_location_buttons_ui()
         self.path_display_label.configure(text=f"Target: {self.current_scan_path}")
+
+    def update_location_buttons_ui(self):
+        # Update button highlight
+        btns = {"Home": self.home_btn, "System": self.system_btn, "Custom": self.custom_btn}
+        for name, btn in btns.items():
+            if name == self.current_loc_type:
+                btn.configure(fg_color="#1f538d", border_width=0)
+            else:
+                btn.configure(fg_color="transparent", border_width=1)
 
     def select_custom_folder(self):
         path = ctk.filedialog.askdirectory()
         if path:
             self.current_scan_path = path
             self.path_display_label.configure(text=f"Target: {self.current_scan_path}")
-            self.location_selector.set("📁 Custom")
+            self.current_loc_type = "Custom"
+            self.update_location_buttons_ui()
             self.log(f"Custom path selected: {path}")
         else:
-            # Revert to Home if cancelled
-            self.location_selector.set("🏠 Home")
-            self.change_location_event("🏠 Home")
+            # Revert to Home if cancelled and no current custom
+            if self.current_loc_type == "Custom":
+                self.change_location_event("Home")
 
     def stop_scan(self):
         self.interrupt_event.set()

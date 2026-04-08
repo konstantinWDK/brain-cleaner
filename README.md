@@ -1,84 +1,36 @@
-# 🧠 Brain Cleaner
+# 🧠 Brain Cleaner - Guía de Compilación
 
-[![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Platform Linux](https://img.shields.io/badge/platform-linux-lightgrey.svg)](https://en.wikipedia.org/wiki/Linux)
-
-**Brain Cleaner** es una potente utilidad profesional diseñada para identificar y eliminar residuos persistentes de agentes de IA y registros "brain" que congestionan tu sistema y comprometen tu privacidad.
+Este documento contiene los comandos necesarios para compilar la aplicación en diferentes sistemas operativos.
 
 ---
 
-## ✨ Características Principales
+## 🏗️ Comandos de Compilación
 
-- 🔍 **Escaneo Inteligente Multicapa**: Detecta carpetas y archivos de configuración de Gemini, Claude, Claude-Dev (Roo-Code), Cursor, Windsurf y más.
-- 📦 **Limpieza de Dependencias**: Incluye soporte para detectar y eliminar pesadas carpetas `node_modules`.
-- 🌓 **Interfaz Moderna e Intuitiva**: UI compacta construida con `CustomTkinter`, con soporte nativo para temas **Oscuro** y **Claro**.
-- 📊 **Gestión por Categorías**: Los residuos se organizan en pestañas (Gemini, Claude, IDE Agents, Node Modules) para una revisión segura antes de borrar.
-- ⚡ **Feedback en Tiempo Real**: Barra de progreso indeterminada y registro de actividad detallado para monitorear cada acción.
-- 🛡️ **Limpieza Selectiva o Masiva**: Botones dedicados para borrar solo lo seleccionado o realizar una limpieza total de lo visible.
+Para generar el ejecutable portable, entra en la carpeta correspondiente a tu sistema operativo y ejecuta el script:
 
----
+### 🐧 Linux
+```bash
+cd compilador/linux && python3 build.py
+```
 
-## 🛠️ Instalación y Requisitos
+### 🪟 Windows
+```bash
+cd compilador/windows && python build.py
+```
 
-### Requisitos Previos
-- Python 3.7 o superior instalado.
-
-### Clonar y Configurar
-1. Instala la dependencia gráfica necesaria:
-   ```bash
-   pip install customtkinter
-   ```
-
-2. Ejecuta la aplicación:
-   ```bash
-   python3 app.py
-   ```
+### 🍎 macOS
+```bash
+cd compilador/mac && python3 build.py
+```
 
 ---
 
-## 🚀 Cómo Usarlo
+## ℹ️ Información Importante
 
-1. **Seleccionar Ubicación**: Elge el alcance del escaneo (Home, Sistema Completo, o una carpeta personalizada).
-2. **Iniciar Escaneo**: Haz clic en `🚀 START SCAN` y espera a que la IA encuentre los residuos.
-3. **Revisar y Seleccionar**: Navega por las categorías para ver cuánto espacio puedes recuperar.
-4. **Limpiar**: Usa `Clean Selected` para elementos específicos o `Clean All` para vaciar la categoría actual.
-
----
-
-## 🏗️ Compilación (Instaladores)
-
-He preparado carpetas específicas para compilar la aplicación en cada plataforma. Solo tienes que ir a la carpeta correspondiente y ejecutar el script `build.py`:
-
-- 🐧 **Linux**: `cd compilador/linux && python3 build.py`
-- 🪟 **Windows**: `cd compilador/windows && python build.py`
-- 🍎 **macOS**: `cd compilador/mac && python3 build.py`
-
-Cada script generará un ejecutable único en la carpeta `dist/` dentro de su respectivo directorio, optimizado para esa plataforma.
-
-> [!IMPORTANT]
-> Debes ejecutar el script de cada carpeta **dentro de su sistema operativo nativo** para obtener el archivo de instalación correcto.
+- **Salida**: El archivo ejecutable se generará en la carpeta `dist/` dentro de cada directorio de compilación.
+- **Entorno**: Se recomienda ejecutar el comando **dentro del sistema operativo nativo** para asegurar la compatibilidad del binario.
+- **Dependencias**: El script instalará automáticamente `PyInstaller` y sus dependencias si no están presentes.
 
 ---
-
-
-## 📸 Vista de la Aplicación
-
-*(Próximamente: Añade aquí capturas de pantalla de la interfaz)*
-
----
-
-## ⚠️ Aviso Legal (Safety First)
-
-> [!WARNING]
-> Esta herramienta elimina carpetas de forma permanente. **No hay papelera de reciclaje**. Por favor, revisa cuidadosamente la lista de elementos detectados antes de proceder con la limpieza. No nos hacemos responsables de pérdidas de datos accidentales por una selección incorrecta.
-
----
-
-## 📜 Licencia
-
-Distribuido bajo la Licencia MIT. Consulte `LICENSE` (próximamente) para obtener más información.
-
----
-*Desarrollado con ❤️ para mantener tu sistema libre de ruido digital.*
+*Manten tu sistema limpio y libre de residuos de IA.*
 

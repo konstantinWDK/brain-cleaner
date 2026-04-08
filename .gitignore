@@ -11,3 +11,12 @@ env/
 htmlcov/
 *.log
 .DS_Store
+
+# Build artifacts
+build/
+dist/
+*.spec
+**/build/
+**/dist/
+**/__pycache__/
+**/*.spec

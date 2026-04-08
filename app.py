@@ -244,17 +244,28 @@ class BrainCleanerApp(ctk.CTk):
 
         self.bubbles_container = ctk.CTkFrame(self.filter_frame, fg_color="transparent")
         self.bubbles_container.pack(side="left", fill="x", expand=True)
-        
         # Initial bubbles
+
+        # 2.5 Progress Area (NEW - PROMINENT)
+        self.progress_container = ctk.CTkFrame(self.main_container, fg_color="transparent")
+        self.progress_container.grid(row=2, column=0, padx=10, pady=(10, 0), sticky="ew")
+        self.progress_container.grid_columnconfigure(0, weight=1)
+        self.progress_container.grid_remove() # Hidden by default
+
+        self.progress_label = ctk.CTkLabel(self.progress_container, text="", font=ctk.CTkFont(size=10, slant="italic"))
+        self.progress_label.grid(row=0, column=0, padx=10, pady=(0, 2))
+
+        self.progress_bar = ctk.CTkProgressBar(self.progress_container, mode="indeterminate", height=10, progress_color="#1f538d")
+        self.progress_bar.grid(row=1, column=0, padx=10, pady=(0, 5), sticky="ew")
 
         # 3. Unified Results Scroll Frame
         self.results_frame = ctk.CTkScrollableFrame(self.main_container, label_text="Detected AI Residues")
-        self.results_frame.grid(row=2, column=0, padx=10, pady=10, sticky="nsew")
-        self.main_container.grid_rowconfigure(2, weight=1)
+        self.results_frame.grid(row=3, column=0, padx=10, pady=10, sticky="nsew")
+        self.main_container.grid_rowconfigure(3, weight=1)
 
         # 4. Residue Manager Footer Info
         self.footer_info = ctk.CTkFrame(self.main_container, fg_color="transparent")
-        self.footer_info.grid(row=3, column=0, padx=10, pady=5, sticky="ew")
+        self.footer_info.grid(row=4, column=0, padx=10, pady=5, sticky="ew")
         
         self.header = ctk.CTkLabel(self.footer_info, text="AI Residue Manager", font=ctk.CTkFont(size=16, weight="bold"))
         self.header.pack(side="left", padx=5)
@@ -264,10 +275,6 @@ class BrainCleanerApp(ctk.CTk):
 
         self.status_label = ctk.CTkLabel(self.footer_info, text="Ready to scan", font=ctk.CTkFont(size=12))
         self.status_label.pack(side="right", padx=10)
-
-        self.progress_bar = ctk.CTkProgressBar(self.main_container, mode="indeterminate", height=6)
-        self.progress_bar.grid(row=4, column=0, padx=20, pady=(0, 5), sticky="ew")
-        self.progress_bar.grid_remove()
 
         # 5. Compact Log Area
         self.log_textbox = ctk.CTkTextbox(self.main_container, height=80, font=ctk.CTkFont(size=10))
@@ -424,10 +431,13 @@ class BrainCleanerApp(ctk.CTk):
         self.run_scan_button.grid_remove()
         self.stop_scan_button.grid()
         self.stop_scan_button.configure(state="normal")
-        self.progress_bar.grid()
+        
+        t = self.texts[self.lang]
+        self.progress_label.configure(text=f"{t['scanning']} {path}")
+        self.progress_container.grid()
         self.progress_bar.start()
         
-        self.status_label.configure(text=f"Scanning {path}... Please wait.")
+        self.status_label.configure(text=f"{t['scanning']} {path}... Please wait.")
         self.log(f"Starting scan on {path}...")
         
         # Start button animation
@@ -466,7 +476,7 @@ class BrainCleanerApp(ctk.CTk):
 
     def finish_scan(self, results):
         self.progress_bar.stop()
-        self.progress_bar.grid_remove()
+        self.progress_container.grid_remove()
         self.stop_scan_button.grid_remove()
         self.run_scan_button.grid()
         

@@ -374,9 +374,13 @@ class BrainCleanerApp(ctk.CTk):
             for path, size_str, _ in results.get(cat, []):
                 var = ctk.BooleanVar(value=False)
 
-                row = ctk.CTkFrame(self.results_frame,
-                                   fg_color=("#f5f5f5", "#2b2b2b"), corner_radius=8)
-                row.pack(fill="x", padx=8, pady=3)
+                # ── WRAPPER: groups parent row + children together ──────────
+                wrapper = ctk.CTkFrame(self.results_frame, fg_color="transparent")
+                wrapper.pack(fill="x", padx=4, pady=2)
+
+                # ── PARENT ROW ──────────────────────────────────────────────
+                row = ctk.CTkFrame(wrapper, fg_color=("#f5f5f5", "#2b2b2b"), corner_radius=8)
+                row.pack(fill="x")
                 row.grid_columnconfigure(3, weight=1)
 
                 cb = ctk.CTkCheckBox(row, text="", variable=var, width=24)
@@ -393,25 +397,28 @@ class BrainCleanerApp(ctk.CTk):
                                         width=72, anchor="e")
                 size_lbl.grid(row=0, column=2, padx=(0, 10), pady=6)
 
-                disp = path
-                path_lbl = ctk.CTkLabel(row, text=disp,
+                path_lbl = ctk.CTkLabel(row, text=path,
                                         font=ctk.CTkFont(size=11, weight="bold"), anchor="w")
                 path_lbl.grid(row=0, column=3, padx=(0, 4), pady=6, sticky="ew")
 
-                # Expand button to show subfolders
+                # Expand chevron button (improved UI)
                 expand_btn = ctk.CTkButton(
-                    row, text="▶", width=26, height=26,
-                    fg_color="transparent", border_width=0,
-                    hover_color=("#d0d0d0", "#3a3a3a"),
-                    font=ctk.CTkFont(size=11))
-                expand_btn.grid(row=0, column=4, padx=(0, 4), pady=6)
+                    row, text="›", width=28, height=28,
+                    fg_color=("#e0e0e0", "#3a3a3a"),
+                    hover_color=("#c8c8c8", "#484848"),
+                    text_color=("#333333", "#eeeeee"),
+                    corner_radius=8, border_width=0,
+                    font=ctk.CTkFont(size=16, weight="bold"))
+                expand_btn.grid(row=0, column=4, padx=(0, 8), pady=6)
 
-                # Container for child rows (hidden by default, packed after parent row)
-                children_frame = ctk.CTkFrame(self.results_frame, fg_color="transparent")
-                child_rows = []   # [(child_path, child_var)]
+                # ── CHILDREN FRAME (inline below parent) ───────────────────
+                children_frame = ctk.CTkFrame(wrapper,
+                                              fg_color=("#ececec", "#242424"),
+                                              corner_radius=8)
+                child_rows = []
                 expanded = [False]
 
-                # Cascade parent selection to all children
+                # Cascade parent → children
                 def _sync_children(*_, pv=var, cr=child_rows):
                     state = pv.get()
                     for _, cv in cr:
@@ -421,51 +428,50 @@ class BrainCleanerApp(ctk.CTk):
 
                 def _populate_children(p=path, cf=children_frame, cr=child_rows, pv=var):
                     if cr:
-                        return  # already populated
+                        return
                     try:
                         entries = sorted(os.scandir(p), key=lambda e: (not e.is_dir(), e.name.lower()))
                     except PermissionError:
+                        ctk.CTkLabel(cf, text="  ⚠️ Permission denied",
+                                     font=ctk.CTkFont(size=10), text_color="#FF9500"
+                                     ).pack(anchor="w", padx=12, pady=4)
                         return
+
                     for entry in entries:
                         child_var = ctk.BooleanVar(value=pv.get())
-                        child_row = ctk.CTkFrame(cf, fg_color=("#ebebeb", "#252525"), corner_radius=6)
-                        child_row.pack(fill="x", padx=(36, 8), pady=2)
+                        child_row = ctk.CTkFrame(cf, fg_color="transparent")
+                        child_row.pack(fill="x", padx=8, pady=1)
                         child_row.grid_columnconfigure(1, weight=1)
 
-                        ctk.CTkCheckBox(child_row, text="", variable=child_var, width=22
-                                        ).grid(row=0, column=0, padx=(8, 4), pady=4)
+                        ctk.CTkCheckBox(child_row, text="", variable=child_var, width=20
+                                        ).grid(row=0, column=0, padx=(8, 4), pady=3)
 
                         icon = "📁" if entry.is_dir() else "📄"
                         ctk.CTkLabel(child_row,
                                      text=f"{icon}  {entry.name}",
                                      font=ctk.CTkFont(size=10), anchor="w"
-                                     ).grid(row=0, column=1, padx=4, pady=4, sticky="ew")
+                                     ).grid(row=0, column=1, padx=2, pady=3, sticky="ew")
 
                         try:
-                            if entry.is_file():
-                                sz = entry.stat().st_size
-                                sz_str = self.scanner.format_size(sz) if sz else ""
-                            else:
-                                sz_str = ""
+                            sz_str = self.scanner.format_size(entry.stat().st_size) if entry.is_file() else ""
                         except Exception:
                             sz_str = ""
                         if sz_str:
-                            ctk.CTkLabel(child_row, text=sz_str,
-                                         text_color="#FF9500",
+                            ctk.CTkLabel(child_row, text=sz_str, text_color="#FF9500",
                                          font=ctk.CTkFont(size=10, weight="bold")
-                                         ).grid(row=0, column=2, padx=(0, 8), pady=4)
+                                         ).grid(row=0, column=2, padx=(0, 10), pady=3)
 
                         cr.append((entry.path, child_var))
 
-                def _toggle_expand(p=path, cf=children_frame,
-                                   btn=expand_btn, ex=expanded, cr=child_rows, pv=var):
-                    _populate_children(p, cf, cr, pv)
+                def _toggle_expand(cf=children_frame, btn=expand_btn, ex=expanded,
+                                   populate=_populate_children):
+                    populate()
                     if ex[0]:
                         cf.pack_forget()
-                        btn.configure(text="▶")
+                        btn.configure(text="›")
                     else:
-                        cf.pack(fill="x", after=row)
-                        btn.configure(text="▼")
+                        cf.pack(fill="x", pady=(2, 0))
+                        btn.configure(text="⌄")
                     ex[0] = not ex[0]
 
                 expand_btn.configure(command=_toggle_expand)
@@ -476,8 +482,9 @@ class BrainCleanerApp(ctk.CTk):
                 for w in (size_lbl, path_lbl, row):
                     w.bind("<Button-1>", _toggle)
 
-                # Store extended tuple: (row, cat, var, path, children_frame, child_rows)
-                self.residue_rows.append((row, cat, var, path, children_frame, child_rows))
+                # Store: (wrapper, cat, var, path, children_frame, child_rows)
+                self.residue_rows.append((wrapper, cat, var, path, children_frame, child_rows))
+
 
         self.clean_selected_button.configure(state="normal")
         self.clean_all_button.configure(state="normal")

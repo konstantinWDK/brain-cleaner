@@ -483,11 +483,11 @@ class BrainCleanerApp(ctk.CTk):
         t = self.texts[self.lang]
         
         if self.interrupt_event.is_set():
-            self.status_label.configure(text="Scan stopped by user.")
-            self.log("Scan stopped.")
+            self.status_label.configure(text="Scan interrupted.")
+            self.log("Scan stopped by user.")
         
-        total_found = len(results["All"])
-        total_bytes = sum(item[2] for item in results["All"])
+        total_found = len(results.get("All", []))
+        total_bytes = sum(item[2] for item in results.get("All", []))
         total_str = self.scanner.format_size(total_bytes)
 
         if total_found == 0:
@@ -502,49 +502,65 @@ class BrainCleanerApp(ctk.CTk):
         self.log(f"Scan complete. Found {total_found} items ({total_str}).")
         
         # Identify found categories
-        found_cats = [cat for cat in self.scanner.categories.keys() if len(results[cat]) > 0]
+        found_cats = [cat for cat in self.scanner.categories.keys() if cat in results and len(results[cat]) > 0]
         self.create_filter_bubbles([t["all"]] + found_cats)
         self.active_filter = t["all"]
         
+        # Configure results frame column
+        self.results_frame.grid_columnconfigure(0, weight=1)
+
         # Populate unified list
         row_idx = 0
-        for i, (cat, items) in enumerate(results.items()):
-            if cat == "All": continue
+        for cat in self.scanner.categories.keys():
+            items = results.get(cat, [])
+            if not items:
+                continue
             
             for path, size_str, size_bytes in items:
                 var = ctk.BooleanVar(value=False)
                 
-                # Row Frame
-                item_frame = ctk.CTkFrame(self.results_frame, fg_color="transparent")
-                item_frame.grid(row=row_idx, column=0, padx=5, pady=2, sticky="w")
+                # Row Frame - full width
+                item_frame = ctk.CTkFrame(self.results_frame, fg_color=("#f9f9f9", "#2b2b2b"), corner_radius=8)
+                item_frame.grid(row=row_idx, column=0, padx=8, pady=3, sticky="ew")
+                item_frame.grid_columnconfigure(3, weight=1)  # Path label gets available space
                 row_idx += 1
                 
-                cb = ctk.CTkCheckBox(item_frame, text="", variable=var, width=20)
-                cb.pack(side="left", padx=(5, 5))
+                # Checkbox
+                cb = ctk.CTkCheckBox(item_frame, text="", variable=var, width=24)
+                cb.grid(row=0, column=0, padx=(8, 4), pady=6)
                 
-                # Category Tag (Badge)
+                # Category Badge
                 cat_color = self.get_category_color(cat)
                 cat_badge = ctk.CTkLabel(item_frame, text=f" {cat} ", 
-                                        fg_color=cat_color, text_color="white", corner_radius=6, font=ctk.CTkFont(size=9, weight="bold"))
-                cat_badge.pack(side="left", padx=(0, 10))
+                                        fg_color=cat_color, text_color="white",
+                                        corner_radius=6, font=ctk.CTkFont(size=9, weight="bold"))
+                cat_badge.grid(row=0, column=1, padx=(4, 8), pady=6)
 
                 # Size Label (Bold & Orange)
-                size_label = ctk.CTkLabel(item_frame, text=f"[{size_str}] ", 
-                                         text_color="#FF9500", font=ctk.CTkFont(size=11, weight="bold"))
-                size_label.pack(side="left")
+                size_label = ctk.CTkLabel(item_frame, text=size_str, 
+                                         text_color="#FF9500", font=ctk.CTkFont(size=11, weight="bold"),
+                                         width=70, anchor="e")
+                size_label.grid(row=0, column=2, padx=(0, 10), pady=6)
                 
-                # Path Label
-                path_label = ctk.CTkLabel(item_frame, text=path, font=ctk.CTkFont(size=11, weight="bold"))
-                path_label.pack(side="left")
+                # Path Label — truncated if too long
+                display_path = path.replace(str(Path.home()), "~")
+                path_label = ctk.CTkLabel(item_frame, text=display_path,
+                                         font=ctk.CTkFont(size=11, weight="bold"),
+                                         anchor="w")
+                path_label.grid(row=0, column=3, padx=(0, 8), pady=6, sticky="ew")
 
                 def toggle_cb(event, v=var): v.set(not v.get())
                 size_label.bind("<Button-1>", toggle_cb)
                 path_label.bind("<Button-1>", toggle_cb)
+                item_frame.bind("<Button-1>", toggle_cb)
 
                 self.residue_rows.append((item_frame, cat, var, path))
 
         self.clean_all_button.configure(state="normal")
         self.clean_selected_button.configure(state="normal")
+        
+        # Force all items visible (default is show all)
+        self.apply_filter(t["all"])
 
     def create_filter_bubbles(self, categories):
         # Clear existing bubbles

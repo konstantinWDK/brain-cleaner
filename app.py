@@ -92,22 +92,19 @@ class BrainCleanerApp(ctk.CTk):
                      font=ctk.CTkFont(size=12, weight="bold")
                      ).grid(row=5, column=0, padx=20, pady=(14, 4), sticky="ew")
 
-        self.mode_ai_var = ctk.BooleanVar(value=True)
-        self.mode_npm_var = ctk.BooleanVar(value=True)
+        self.scan_mode_var = ctk.StringVar(value="ai")
 
-        ctk.CTkCheckBox(self.sidebar, text="🤖  AI Tools",
-                        variable=self.mode_ai_var,
-                        font=ctk.CTkFont(size=12),
-                        checkbox_width=18, checkbox_height=18,
-                        checkmark_color="white", fg_color="#1f538d"
-                        ).grid(row=6, column=0, padx=24, pady=2, sticky="w")
+        ctk.CTkRadioButton(self.sidebar, text="🤖  AI Tools",
+                           variable=self.scan_mode_var, value="ai",
+                           font=ctk.CTkFont(size=12), border_color="#1f538d",
+                           hover_color="#1f538d", fg_color="#1f538d"
+                           ).grid(row=6, column=0, padx=24, pady=2, sticky="w")
 
-        ctk.CTkCheckBox(self.sidebar, text="📦  NPM Modules",
-                        variable=self.mode_npm_var,
-                        font=ctk.CTkFont(size=12),
-                        checkbox_width=18, checkbox_height=18,
-                        checkmark_color="white", fg_color="#2e7d32"
-                        ).grid(row=7, column=0, padx=24, pady=(2, 4), sticky="w")
+        ctk.CTkRadioButton(self.sidebar, text="📦  NPM Modules",
+                           variable=self.scan_mode_var, value="npm",
+                           font=ctk.CTkFont(size=12), border_color="#2e7d32",
+                           hover_color="#2e7d32", fg_color="#2e7d32"
+                           ).grid(row=7, column=0, padx=24, pady=(2, 4), sticky="w")
 
         # ── Bottom Sidebar Controls ───────────────────────────────
         bottom = ctk.CTkFrame(self.sidebar, fg_color="transparent")
@@ -341,10 +338,6 @@ class BrainCleanerApp(ctk.CTk):
         self.log("Stopping scan...")
 
     def start_scan(self, path):
-        if not self.mode_ai_var.get() and not self.mode_npm_var.get():
-            self.status_label.configure(text="Select at least one scan mode.")
-            return
-
         self.interrupt_event.clear()
 
         # Reset results
@@ -370,14 +363,9 @@ class BrainCleanerApp(ctk.CTk):
         self.scan_icon_idx = 0
         self._animate_scan()
 
-        active_modes = []
-        if self.mode_ai_var.get():
-            active_modes.append("ai")
-        if self.mode_npm_var.get():
-            active_modes.append("npm")
-
-        self.log(f"Scan: {path} | modes: {', '.join(active_modes)}")
-        threading.Thread(target=self._run_scan, args=(path, active_modes), daemon=True).start()
+        mode = self.scan_mode_var.get()
+        self.log(f"Scan: {path} | mode: {mode}")
+        threading.Thread(target=self._run_scan, args=(path, mode), daemon=True).start()
 
     def _animate_scan(self):
         if getattr(self, "scanning_active", False):
@@ -386,22 +374,22 @@ class BrainCleanerApp(ctk.CTk):
             self.scan_icon_idx += 1
             self.after(400, self._animate_scan)
 
-    def _run_scan(self, path, modes):
+    def _run_scan(self, path, mode):
         raw = self.scanner.find_residues(path, self.interrupt_event)
         # Filter by mode
         results = {"All": []}
-        if "ai" in modes:
+        if mode == "ai":
             for c in self.AI_CATS:
                 results[c] = raw.get(c, [])
                 results["All"] += results[c]
-        if "npm" in modes:
+        elif mode == "npm":
             for c in self.NPM_CATS:
                 results[c] = raw.get(c, [])
                 results["All"] += results[c]
         self.scanning_active = False
-        self.after(0, lambda: self._finish_scan(results, modes))
+        self.after(0, lambda: self._finish_scan(results, mode))
 
-    def _finish_scan(self, results, modes):
+    def _finish_scan(self, results, mode):
         self.progress_bar.stop()
         self.progress_container.grid_remove()
         self.stop_scan_button.grid_remove()
@@ -439,9 +427,9 @@ class BrainCleanerApp(ctk.CTk):
             for cat in section_cats:
                 self._render_rows(results[cat], cat)
 
-        if "ai" in modes:
+        if mode == "ai":
             render_section("🤖  AI Tools", "#1f538d", self.AI_CATS)
-        if "npm" in modes:
+        elif mode == "npm":
             render_section("📦  NPM Modules", "#2e7d32", self.NPM_CATS)
 
         self.clean_selected_button.configure(state="normal")

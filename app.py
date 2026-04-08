@@ -97,13 +97,15 @@ class BrainCleanerApp(ctk.CTk):
         ctk.CTkRadioButton(self.sidebar, text="🤖  AI Tools",
                            variable=self.scan_mode_var, value="ai",
                            font=ctk.CTkFont(size=12), border_color="#1f538d",
-                           hover_color="#1f538d", fg_color="#1f538d"
+                           hover_color="#1f538d", fg_color="#1f538d",
+                           command=self._update_mode_ui
                            ).grid(row=6, column=0, padx=24, pady=2, sticky="w")
 
         ctk.CTkRadioButton(self.sidebar, text="📦  NPM Modules",
                            variable=self.scan_mode_var, value="npm",
                            font=ctk.CTkFont(size=12), border_color="#2e7d32",
-                           hover_color="#2e7d32", fg_color="#2e7d32"
+                           hover_color="#2e7d32", fg_color="#2e7d32",
+                           command=self._update_mode_ui
                            ).grid(row=7, column=0, padx=24, pady=(2, 4), sticky="w")
 
         # ── Bottom Sidebar Controls ───────────────────────────────
@@ -161,7 +163,7 @@ class BrainCleanerApp(ctk.CTk):
         main = ctk.CTkFrame(self, fg_color="transparent")
         main.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
         main.grid_columnconfigure(0, weight=1)
-        main.grid_rowconfigure(3, weight=1)
+        main.grid_rowconfigure(4, weight=1)
         self.main = main
 
         # Info Slider
@@ -235,14 +237,33 @@ class BrainCleanerApp(ctk.CTk):
                                                height=10, progress_color="#1f538d")
         self.progress_bar.grid(row=1, column=0, padx=10, pady=(0, 5), sticky="ew")
 
+        # Static Header for Scan Selection
+        self.scan_header_frame = ctk.CTkFrame(main, fg_color="#1f538d", corner_radius=8)
+        self.scan_header_frame.grid(row=3, column=0, padx=10, pady=(8, 0), sticky="ew")
+        
+        txt_f = ctk.CTkFrame(self.scan_header_frame, fg_color="transparent")
+        txt_f.pack(side="left", fill="x", expand=True, padx=12, pady=10)
+        
+        self.scan_header_title = ctk.CTkLabel(txt_f, text="🤖 AI Tools Cleanup", 
+                                              font=ctk.CTkFont(size=14, weight="bold"),
+                                              text_color="white", anchor="w")
+        self.scan_header_title.pack(fill="x")
+        self.scan_header_desc = ctk.CTkLabel(txt_f, text="Identify and remove cache, logs, and configs left by AI assistants.", 
+                                             font=ctk.CTkFont(size=11), text_color="#e0e0e0", anchor="w")
+        self.scan_header_desc.pack(fill="x", pady=(2, 0))
+
+        self.scan_header_count = ctk.CTkLabel(self.scan_header_frame, text="",
+                                              font=ctk.CTkFont(size=13, weight="bold"), text_color="#ffffff")
+        self.scan_header_count.pack(side="right", padx=16, pady=10)
+
         # Results Scrollable Frame
-        self.results_frame = ctk.CTkScrollableFrame(main, label_text="Detected AI Residues")
-        self.results_frame.grid(row=3, column=0, padx=10, pady=8, sticky="nsew")
+        self.results_frame = ctk.CTkScrollableFrame(main)
+        self.results_frame.grid(row=4, column=0, padx=10, pady=8, sticky="nsew")
         self.results_frame.grid_columnconfigure(0, weight=1)
 
         # Footer
         footer = ctk.CTkFrame(main, fg_color="transparent")
-        footer.grid(row=4, column=0, padx=10, pady=(0, 5), sticky="ew")
+        footer.grid(row=5, column=0, padx=10, pady=(0, 5), sticky="ew")
 
         ctk.CTkLabel(footer, text="AI Residue Manager",
                      font=ctk.CTkFont(size=14, weight="bold")).pack(side="left", padx=5)
@@ -257,12 +278,27 @@ class BrainCleanerApp(ctk.CTk):
 
         # Log Area
         self.log_textbox = ctk.CTkTextbox(main, height=80, font=ctk.CTkFont(size=10))
-        self.log_textbox.grid(row=5, column=0, padx=10, pady=(0, 8), sticky="nsew")
+        self.log_textbox.grid(row=6, column=0, padx=10, pady=(0, 8), sticky="nsew")
         self.log_textbox.insert("0.0", "--- Activity Log ---\n")
         self.log_textbox.configure(state="disabled")
         self.log_textbox.grid_remove()
 
         self.create_filter_bubbles(["All"])
+        
+        # Initialize mode UI
+        self._update_mode_ui()
+
+    def _update_mode_ui(self):
+        mode = self.scan_mode_var.get()
+        if mode == "ai":
+            self.scan_header_frame.configure(fg_color="#1f538d")
+            self.scan_header_title.configure(text="🤖 AI Tools Cleanup")
+            self.scan_header_desc.configure(text="Identify and remove cache, logs, and configs left by AI assistants (Gemini, Claude, Cursor...).")
+        else:
+            self.scan_header_frame.configure(fg_color="#2e7d32")
+            self.scan_header_title.configure(text="📦 NPM Modules Cleanup")
+            self.scan_header_desc.configure(text="Free up space by removing heavy node_modules directories from web projects.")
+        self.scan_header_count.configure(text="")
 
     # ── Helpers ───────────────────────────────────────────────────
 
@@ -411,40 +447,20 @@ class BrainCleanerApp(ctk.CTk):
         found_cats = [c for c in (self.AI_CATS + self.NPM_CATS) if results.get(c)]
         self.create_filter_bubbles(["All"] + found_cats)
 
-        # Render sections
-        def render_section(title, desc, color, cats):
-            section_cats = [c for c in cats if results.get(c)]
-            if not section_cats:
-                return
-            hdr = ctk.CTkFrame(self.results_frame, fg_color=color, corner_radius=8)
-            hdr.pack(fill="x", padx=4, pady=(10, 8))
-            
-            txt_f = ctk.CTkFrame(hdr, fg_color="transparent")
-            txt_f.pack(side="left", fill="x", expand=True, padx=12, pady=8)
-            
-            ctk.CTkLabel(txt_f, text=title, font=ctk.CTkFont(size=14, weight="bold"),
-                         text_color="white", anchor="w").pack(fill="x")
-            ctk.CTkLabel(txt_f, text=desc, font=ctk.CTkFont(size=10),
-                         text_color="#e0e0e0", anchor="w").pack(fill="x", pady=(2, 0))
-
+        count = 0
+        if mode == "ai":
+            section_cats = [c for c in self.AI_CATS if results.get(c)]
             count = sum(len(results[c]) for c in section_cats)
-            ctk.CTkLabel(hdr, text=f"{count} items",
-                         font=ctk.CTkFont(size=13, weight="bold"), text_color="#ffffff"
-                         ).pack(side="right", padx=16, pady=8)
-                         
             for cat in section_cats:
                 self._render_rows(results[cat], cat)
-
-        if mode == "ai":
-            self.results_frame.configure(label_text="Scan Results: AI Tools")
-            render_section("🤖 AI Tools Cleanup", 
-                           "Identify and remove cache, logs, and configs left by AI assistants (Gemini, Claude, Cursor...).", 
-                           "#1f538d", self.AI_CATS)
         elif mode == "npm":
-            self.results_frame.configure(label_text="Scan Results: NPM Modules")
-            render_section("📦 NPM Modules Cleanup", 
-                           "Free up space by removing heavy node_modules directories from web projects.", 
-                           "#2e7d32", self.NPM_CATS)
+            section_cats = [c for c in self.NPM_CATS if results.get(c)]
+            count = sum(len(results[c]) for c in section_cats)
+            for cat in section_cats:
+                self._render_rows(results[cat], cat)
+                
+        if count > 0:
+            self.scan_header_count.configure(text=f"{count} items")
 
         self.clean_selected_button.configure(state="normal")
         self.clean_all_button.configure(state="normal")

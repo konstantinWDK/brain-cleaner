@@ -18,10 +18,18 @@ class BrainCleanerApp(ctk.CTk):
         self.found_items_by_cat = {}
         self.checkboxes_by_cat = {}
         self.interrupt_event = threading.Event()
+        
+        self.category_info = {
+            "Gemini": "Limpia residuos de Google Gemini (.gemini), incluyendo registros del 'brain' y grabaciones.",
+            "Claude": "Elimina carpetas de Anthropic Claude y archivos de configuración asociados.",
+            "IDE Agents": "Borra datos temporales de extensiones de IA como Cursor, Windsurf, Codeium y Tabnine.",
+            "Other Tools": "Limpia rastros de OpenAI, Continue, Roo-Code, Copilot y otras utilidades de IA.",
+            "All": "Vista combinada de todos los residuos de IA detectados en la ubicación seleccionada."
+        }
 
         # Configure grid layout
         self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(2, weight=1)
+        self.grid_rowconfigure(0, weight=1)
 
         # Sidebar
         self.sidebar = ctk.CTkFrame(self, width=200, corner_radius=0)
@@ -63,22 +71,26 @@ class BrainCleanerApp(ctk.CTk):
         self.appearance_mode_optionemenu.set("Dark")
 
         # Main Area
-        self.header = ctk.CTkLabel(self, text="AI Residue Manager", font=ctk.CTkFont(size=24, weight="bold"))
-        self.header.grid(row=0, column=1, padx=20, pady=(20, 0), sticky="w")
+        self.main_container = ctk.CTkFrame(self, fg_color="transparent")
+        self.main_container.grid(row=0, column=1, rowspan=4, padx=10, pady=10, sticky="nsew")
+        self.main_container.grid_columnconfigure(0, weight=1)
+        self.main_container.grid_rowconfigure(1, weight=1) # Tabview gets weight
+
+        # 1. Info Bubble (Bocadillo)
+        self.info_bubble = ctk.CTkFrame(self.main_container, fg_color=("#e0e0e0", "#2b2b2b"), corner_radius=10)
+        self.info_bubble.grid(row=0, column=0, padx=10, pady=(10, 5), sticky="ew")
         
-        self.path_display_label = ctk.CTkLabel(self, text=f"Target: {self.current_scan_path}", font=ctk.CTkFont(size=12, slant="italic"))
-        self.path_display_label.grid(row=1, column=1, padx=20, pady=(0, 0), sticky="w")
+        self.info_title = ctk.CTkLabel(self.info_bubble, text="💡 AI Brain Cleaner Info", font=ctk.CTkFont(size=14, weight="bold"))
+        self.info_title.pack(padx=10, pady=(5, 0), anchor="w")
+        
+        self.info_text = ctk.CTkLabel(self.info_bubble, 
+                                     text="Esta herramienta detecta 'cerebros' y registros temporales de asistentes IA.\nLimpiarlos ayuda a liberar espacio y mantener la privacidad de tus promts.",
+                                     font=ctk.CTkFont(size=11), justify="left")
+        self.info_text.pack(padx=10, pady=(0, 5), anchor="w")
 
-        self.status_label = ctk.CTkLabel(self, text="Ready to scan", font=ctk.CTkFont(size=14))
-        self.status_label.grid(row=2, column=1, padx=20, pady=(5, 0), sticky="w")
-
-        self.progress_bar = ctk.CTkProgressBar(self, mode="indeterminate")
-        self.progress_bar.grid(row=2, column=1, padx=20, pady=(25, 10), sticky="ew")
-        self.progress_bar.grid_remove() 
-
-        # Tabview for categories
-        self.tabview = ctk.CTkTabview(self)
-        self.tabview.grid(row=3, column=1, padx=20, pady=10, sticky="nsew") # Moved down to row 3
+        # 2. Tabview for categories (NOW ON TOP)
+        self.tabview = ctk.CTkTabview(self.main_container, command=self.update_info_bubble)
+        self.tabview.grid(row=1, column=0, padx=10, pady=5, sticky="nsew")
         
         self.categories = list(self.scanner.categories.keys()) + ["All"]
         self.scrollable_frames = {}
@@ -89,11 +101,28 @@ class BrainCleanerApp(ctk.CTk):
             self.scrollable_frames[cat] = frame
             self.checkboxes_by_cat[cat] = []
         
-        self.tabview.set("All") # Set All as default tab
+        self.tabview.set("All")
 
-        # Log area
-        self.log_textbox = ctk.CTkTextbox(self, height=120)
-        self.log_textbox.grid(row=4, column=1, padx=20, pady=(0, 20), sticky="nsew") # Moved down to row 4
+        # 3. Residue Manager Footer Info
+        self.footer_info = ctk.CTkFrame(self.main_container, fg_color="transparent")
+        self.footer_info.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
+        
+        self.header = ctk.CTkLabel(self.footer_info, text="AI Residue Manager", font=ctk.CTkFont(size=16, weight="bold"))
+        self.header.pack(side="left", padx=5)
+
+        self.path_display_label = ctk.CTkLabel(self.footer_info, text=f"Target: {self.current_scan_path}", font=ctk.CTkFont(size=10, slant="italic"))
+        self.path_display_label.pack(side="left", padx=20)
+
+        self.status_label = ctk.CTkLabel(self.footer_info, text="Ready to scan", font=ctk.CTkFont(size=12))
+        self.status_label.pack(side="right", padx=10)
+
+        self.progress_bar = ctk.CTkProgressBar(self.main_container, mode="indeterminate", height=6)
+        self.progress_bar.grid(row=3, column=0, padx=20, pady=(0, 5), sticky="ew")
+        self.progress_bar.grid_remove()
+
+        # 4. Compact Log Area
+        self.log_textbox = ctk.CTkTextbox(self.main_container, height=80, font=ctk.CTkFont(size=10))
+        self.log_textbox.grid(row=4, column=0, padx=10, pady=(0, 10), sticky="nsew")
         self.log_textbox.insert("0.0", "--- Activity Log ---\n")
         self.log_textbox.configure(state="disabled")
 
@@ -107,6 +136,11 @@ class BrainCleanerApp(ctk.CTk):
         for cb, var, path in self.checkboxes_by_cat[category]:
             var.set(value)
         self.log(f"{'Selected' if value else 'Deselected'} all in {category}")
+
+    def update_info_bubble(self):
+        current_tab = self.tabview.get()
+        info = self.category_info.get(current_tab, "")
+        self.info_text.configure(text=info)
 
     def change_location_event(self, selection):
         if selection == "Home (~/)":

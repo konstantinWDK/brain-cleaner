@@ -370,7 +370,7 @@ class BrainCleanerApp(ctk.CTk):
                 size_label.pack(side="left")
                 
                 # Path Label
-                path_label = ctk.CTkLabel(item_frame, text=path, font=ctk.CTkFont(size=11))
+                path_label = ctk.CTkLabel(item_frame, text=path, font=ctk.CTkFont(size=11, weight="bold"))
                 path_label.pack(side="left")
 
                 # Bind clicks on labels to toggle checkbox

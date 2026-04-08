@@ -47,7 +47,7 @@ def build():
         "--noconfirm",         # No pedir confirmación
         "--clean",             # Limpiar cache antes de empezar
         "--windowed",          # Crear bundle .app (indispensable en macOS)
-        "--onefile",           # Un solo archivo ejecutable dentro del bundle
+        "--onedir",            # Mejor rendimiento y requerido para .app en macOS
         f"--name={APP_NAME}",
         f"--add-data={ctk_path}{separator}customtkinter",
         "--collect-all", "customtkinter",

@@ -26,7 +26,8 @@ class BrainScanner:
                 ".gh-copilot", 
                 ".github-copilot",
                 "brain-recordings"
-            ]
+            ],
+            "Node Modules": ["node_modules"]
         }
         # Flattened list for the walker
         self.all_patterns = [p for patterns in self.categories.values() for p in patterns]
@@ -120,7 +121,7 @@ class BrainScanner:
             
         return found
 
-    def delete_item(self, path):
+    def delete_folder(self, path):
         """
         Deletes a directory or file.
         """

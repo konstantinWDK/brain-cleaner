@@ -24,6 +24,7 @@ class BrainCleanerApp(ctk.CTk):
             "Claude": "Elimina carpetas de Anthropic Claude y archivos de configuración asociados.",
             "IDE Agents": "Borra datos temporales de extensiones de IA como Cursor, Windsurf, Codeium y Tabnine.",
             "Other Tools": "Limpia rastros de OpenAI, Continue, Roo-Code, Copilot y otras utilidades de IA.",
+            "Node Modules": "Busca y elimina carpetas de dependencias de Node.js (node_modules), que pueden ocupar GBs de espacio.",
             "All": "Vista combinada de todos los residuos de IA detectados en la ubicación seleccionada."
         }
 

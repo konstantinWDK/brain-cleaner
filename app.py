@@ -577,8 +577,10 @@ class BrainCleanerApp(ctk.CTk):
             btn.pack(side="left", padx=5)
             self.filter_buttons[cat] = btn
 
-        if "All" in self.filter_buttons:
-            self.update_bubble_selection("All")
+        # Select the first bubble (typically "All"/"Todos") by default
+        if self.filter_buttons:
+            first_cat = list(self.filter_buttons.keys())[0]
+            self.update_bubble_selection(first_cat)
 
     def update_bubble_selection(self, selected_cat):
         self.active_filter = selected_cat
@@ -589,19 +591,21 @@ class BrainCleanerApp(ctk.CTk):
                 btn.configure(fg_color="transparent", border_width=1, text_color=("#333333", "#eeeeee"))
 
     def apply_filter(self, selection):
-        if selection in ["Scanning...", "No results", "ESCANEO EN CURSO...", "Sin resultados"]: return
+        t = self.texts[self.lang]
+        blocked = ["Scanning...", "Sin resultados", "No results", 
+                   t.get("no_results", ""), t.get("everything_clean", ""), "¡Todo limpio! ✨", "Everything clean! ✨"]
+        if selection in blocked:
+            return
         
         self.update_bubble_selection(selection)
         self.log(f"Filtering by: {selection}")
         
-        t = self.texts[self.lang]
+        all_key = t["all"]  # "Todos" or "All"
         for frame, cat, var, path in self.residue_rows:
-            if selection == t["all"] or selection == cat:
+            if selection == all_key or selection == cat:
                 frame.grid()
             else:
                 frame.grid_remove()
-        self.clean_all_button.configure(state="normal")
-        self.clean_selected_button.configure(state="normal")
 
     def clean_selected(self):
         to_clean = []

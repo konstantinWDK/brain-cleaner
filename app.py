@@ -72,13 +72,13 @@ class BrainCleanerApp(ctk.CTk):
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
 
         # Scan Location Selection
-        self.location_label = ctk.CTkLabel(self.sidebar, text="Scan Location:", anchor="w")
-        self.location_label.grid(row=1, column=0, padx=20, pady=(10, 0))
+        self.location_label = ctk.CTkLabel(self.sidebar, text="Scan Scope:", anchor="w", font=ctk.CTkFont(weight="bold"))
+        self.location_label.grid(row=1, column=0, padx=20, pady=(10, 5))
         
-        self.location_optionemenu = ctk.CTkOptionMenu(self.sidebar, values=["Home (~/)", "Full System (/)", "Drives (/media)", "Mounts (/mnt)"], command=self.change_location_event)
-        self.location_optionemenu.grid(row=2, column=0, padx=20, pady=10)
-        self.location_optionemenu.set("Full System (/)")
-        self.current_scan_path = "/"
+        self.location_selector = ctk.CTkSegmentedButton(self.sidebar, values=["🏠 Home", "💻 System", "📁 Custom"], command=self.change_location_event)
+        self.location_selector.grid(row=2, column=0, padx=20, pady=5, sticky="ew")
+        self.location_selector.set("🏠 Home")
+        self.current_scan_path = str(Path.home())
 
         self.custom_folder_button = ctk.CTkButton(self.sidebar, text="Select Custom Folder", command=self.select_custom_folder, fg_color="transparent", border_width=1)
         self.custom_folder_button.grid(row=3, column=0, padx=20, pady=10)
@@ -244,14 +244,13 @@ class BrainCleanerApp(ctk.CTk):
         self.log(f"Categoría: {current_tab} - {info}")
 
     def change_location_event(self, selection):
-        if selection == "Home (~/)":
+        if "Home" in selection:
             self.current_scan_path = str(Path.home())
-        elif selection == "Full System (/)":
+        elif "System" in selection:
             self.current_scan_path = "/"
-        elif selection == "Drives (/media)":
-            self.current_scan_path = "/media"
-        elif selection == "Mounts (/mnt)":
-            self.current_scan_path = "/mnt"
+        elif "Custom" in selection:
+            self.select_custom_folder()
+            return
         
         self.path_display_label.configure(text=f"Target: {self.current_scan_path}")
 
@@ -260,8 +259,12 @@ class BrainCleanerApp(ctk.CTk):
         if path:
             self.current_scan_path = path
             self.path_display_label.configure(text=f"Target: {self.current_scan_path}")
-            self.location_optionemenu.set("Custom") # Add a custom option visually if needed
+            self.location_selector.set("📁 Custom")
             self.log(f"Custom path selected: {path}")
+        else:
+            # Revert to Home if cancelled
+            self.location_selector.set("🏠 Home")
+            self.change_location_event("🏠 Home")
 
     def stop_scan(self):
         self.interrupt_event.set()

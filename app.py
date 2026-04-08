@@ -396,24 +396,79 @@ class BrainCleanerApp(ctk.CTk):
                 disp = path
                 path_lbl = ctk.CTkLabel(row, text=disp,
                                         font=ctk.CTkFont(size=11, weight="bold"), anchor="w")
-                path_lbl.grid(row=0, column=3, padx=(0, 6), pady=6, sticky="ew")
+                path_lbl.grid(row=0, column=3, padx=(0, 4), pady=6, sticky="ew")
 
-                # Open in Finder button
-                def open_in_finder(p=path):
-                    if sys.platform == "darwin":
-                        subprocess.run(["open", p])
-                    elif sys.platform == "win32":
-                        subprocess.run(["explorer", p])
-                    else:
-                        subprocess.run(["xdg-open", p])
-
-                open_btn = ctk.CTkButton(
-                    row, text="📂", width=32, height=28,
-                    fg_color="transparent", border_width=1,
+                # Expand button to show subfolders
+                expand_btn = ctk.CTkButton(
+                    row, text="▶", width=26, height=26,
+                    fg_color="transparent", border_width=0,
                     hover_color=("#d0d0d0", "#3a3a3a"),
-                    font=ctk.CTkFont(size=14),
-                    command=open_in_finder)
-                open_btn.grid(row=0, column=4, padx=(0, 8), pady=6)
+                    font=ctk.CTkFont(size=11))
+                expand_btn.grid(row=0, column=4, padx=(0, 4), pady=6)
+
+                # Container for child rows (hidden by default, packed after parent row)
+                children_frame = ctk.CTkFrame(self.results_frame, fg_color="transparent")
+                child_rows = []   # [(child_path, child_var)]
+                expanded = [False]
+
+                # Cascade parent selection to all children
+                def _sync_children(*_, pv=var, cr=child_rows):
+                    state = pv.get()
+                    for _, cv in cr:
+                        cv.set(state)
+
+                var.trace_add("write", _sync_children)
+
+                def _populate_children(p=path, cf=children_frame, cr=child_rows, pv=var):
+                    if cr:
+                        return  # already populated
+                    try:
+                        entries = sorted(os.scandir(p), key=lambda e: (not e.is_dir(), e.name.lower()))
+                    except PermissionError:
+                        return
+                    for entry in entries:
+                        child_var = ctk.BooleanVar(value=pv.get())
+                        child_row = ctk.CTkFrame(cf, fg_color=("#ebebeb", "#252525"), corner_radius=6)
+                        child_row.pack(fill="x", padx=(36, 8), pady=2)
+                        child_row.grid_columnconfigure(1, weight=1)
+
+                        ctk.CTkCheckBox(child_row, text="", variable=child_var, width=22
+                                        ).grid(row=0, column=0, padx=(8, 4), pady=4)
+
+                        icon = "📁" if entry.is_dir() else "📄"
+                        ctk.CTkLabel(child_row,
+                                     text=f"{icon}  {entry.name}",
+                                     font=ctk.CTkFont(size=10), anchor="w"
+                                     ).grid(row=0, column=1, padx=4, pady=4, sticky="ew")
+
+                        try:
+                            if entry.is_file():
+                                sz = entry.stat().st_size
+                                sz_str = self.scanner.format_size(sz) if sz else ""
+                            else:
+                                sz_str = ""
+                        except Exception:
+                            sz_str = ""
+                        if sz_str:
+                            ctk.CTkLabel(child_row, text=sz_str,
+                                         text_color="#FF9500",
+                                         font=ctk.CTkFont(size=10, weight="bold")
+                                         ).grid(row=0, column=2, padx=(0, 8), pady=4)
+
+                        cr.append((entry.path, child_var))
+
+                def _toggle_expand(p=path, cf=children_frame,
+                                   btn=expand_btn, ex=expanded, cr=child_rows, pv=var):
+                    _populate_children(p, cf, cr, pv)
+                    if ex[0]:
+                        cf.pack_forget()
+                        btn.configure(text="▶")
+                    else:
+                        cf.pack(fill="x", after=row)
+                        btn.configure(text="▼")
+                    ex[0] = not ex[0]
+
+                expand_btn.configure(command=_toggle_expand)
 
                 def _toggle(e, v=var):
                     v.set(not v.get())
@@ -421,7 +476,8 @@ class BrainCleanerApp(ctk.CTk):
                 for w in (size_lbl, path_lbl, row):
                     w.bind("<Button-1>", _toggle)
 
-                self.residue_rows.append((row, cat, var, path))
+                # Store extended tuple: (row, cat, var, path, children_frame, child_rows)
+                self.residue_rows.append((row, cat, var, path, children_frame, child_rows))
 
         self.clean_selected_button.configure(state="normal")
         self.clean_all_button.configure(state="normal")
@@ -465,7 +521,8 @@ class BrainCleanerApp(ctk.CTk):
         if selection in ("Scanning...", "No results", "Everything clean! ✨"):
             return
         self.update_bubble_selection(selection)
-        for row, cat, var, path in self.residue_rows:
+        for entry in self.residue_rows:
+            row, cat = entry[0], entry[1]
             if selection == "All" or selection == cat:
                 row.pack(fill="x", padx=8, pady=3)
             else:
@@ -474,32 +531,61 @@ class BrainCleanerApp(ctk.CTk):
     # ── Cleaning ──────────────────────────────────────────────────
 
     def clean_selected(self):
-        to_clean = [(f, c, v, p) for f, c, v, p in self.residue_rows if v.get()]
-        if not to_clean:
-            self.log("No items selected.")
-            return
         count = 0
-        for frame, cat, var, path in to_clean:
-            ok, msg = self.scanner.delete_folder(path)
-            if ok:
-                frame.destroy()
-                self.residue_rows = [r for r in self.residue_rows if r[3] != path]
-                count += 1
-            self.log(msg)
-        self.status_label.configure(text=f"Cleaned {count} items.")
+        to_remove_rows = []
+        for entry in list(self.residue_rows):
+            row, cat, var, path = entry[0], entry[1], entry[2], entry[3]
+            child_rows = entry[5] if len(entry) > 5 else []
+
+            selected_children = [(cp, cv) for cp, cv in child_rows if cv.get()]
+            all_children_selected = child_rows and all(cv.get() for _, cv in child_rows)
+
+            if var.get() and (not child_rows or all_children_selected):
+                # Delete whole parent folder
+                ok, msg = self.scanner.delete_folder(path)
+                self.log(msg)
+                if ok:
+                    row.destroy()
+                    if len(entry) > 4:
+                        entry[4].destroy()  # children_frame
+                    to_remove_rows.append(entry)
+                    count += 1
+            elif selected_children:
+                # Partial selection - delete only selected children
+                for cp, cv in selected_children:
+                    ok, msg = self.scanner.delete_folder(cp)
+                    self.log(msg)
+                    if ok:
+                        count += 1
+
+        for r in to_remove_rows:
+            self.residue_rows = [e for e in self.residue_rows if e is not r]
+
+        if count == 0:
+            self.log("No items selected.")
+        else:
+            self.status_label.configure(text=f"Cleaned {count} items.")
         self._post_clean()
 
     def clean_all(self):
-        to_clean = [(f, c, v, p) for f, c, v, p in self.residue_rows
-                    if self.active_filter in ("All", c)]
         count = 0
-        for frame, cat, var, path in to_clean:
+        to_remove_rows = []
+        for entry in list(self.residue_rows):
+            row, cat, var, path = entry[0], entry[1], entry[2], entry[3]
+            if self.active_filter not in ("All", cat):
+                continue
             ok, msg = self.scanner.delete_folder(path)
-            if ok:
-                frame.destroy()
-                self.residue_rows = [r for r in self.residue_rows if r[3] != path]
-                count += 1
             self.log(msg)
+            if ok:
+                row.destroy()
+                if len(entry) > 4:
+                    entry[4].destroy()
+                to_remove_rows.append(entry)
+                count += 1
+
+        for r in to_remove_rows:
+            self.residue_rows = [e for e in self.residue_rows if e is not r]
+
         self.status_label.configure(text=f"Removed {count} items.")
         self._post_clean()
 

@@ -25,9 +25,9 @@
 - Python 3.7 o superior instalado.
 
 ### Clonar y Configurar
-1. Instala la dependencia gráfica necesaria:
+1. Instala las dependencias necesarias:
    ```bash
-   pip install customtkinter
+   pip install -r requirements.txt
    ```
 
 2. Ejecuta la aplicación:

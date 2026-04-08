@@ -46,20 +46,21 @@
 
 ---
 
-## 🏗️ Compilación (Crear ejecutable)
+## 🏗️ Compilación (Instaladores)
 
-Si deseas crear un ejecutable portable para compartir la aplicación sin necesidad de instalar Python, puedes usar el script de compilación incluido:
+He preparado carpetas específicas para compilar la aplicación en cada plataforma. Solo tienes que ir a la carpeta correspondiente y ejecutar el script `build.py`:
 
-1. Ejecuta el compilador:
-   ```bash
-   python3 builder.py
-   ```
-2. El script instalará automáticamente `PyInstaller` si es necesario y generará un archivo único en la carpeta `dist/`.
+- 🐧 **Linux**: `cd compilador/linux && python3 build.py`
+- 🪟 **Windows**: `cd compilador/windows && python build.py`
+- 🍎 **macOS**: `cd compilador/mac && python3 build.py`
 
-> [!NOTE]
-> La compilación generará un binario nativo para el sistema operativo donde se ejecute (Linux, Windows o macOS).
+Cada script generará un ejecutable único en la carpeta `dist/` dentro de su respectivo directorio, optimizado para esa plataforma.
+
+> [!IMPORTANT]
+> Debes ejecutar el script de cada carpeta **dentro de su sistema operativo nativo** para obtener el archivo de instalación correcto.
 
 ---
+
 
 ## 📸 Vista de la Aplicación
 

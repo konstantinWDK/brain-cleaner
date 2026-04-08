@@ -7,7 +7,7 @@ Este directorio contiene las herramientas para generar el ejecutable de **Brain 
 1. Asegúrate de tener Python 3 y `pip` instalados.
 2. Instala las dependencias:
    ```bash
-   pip install customtkinter pyinstaller
+   pip install -r ../../requirements.txt
    ```
 3. Ejecuta el script de compilación:
    ```bash

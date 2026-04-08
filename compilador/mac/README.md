@@ -8,7 +8,7 @@ Este directorio contiene las herramientas para generar el ejecutable de **Brain 
 2. Asegúrate de tener Python 3 instalado (recomendado via Homebrew).
 3. Instala las dependencias:
    ```bash
-   pip3 install customtkinter pyinstaller
+   pip3 install -r ../../requirements.txt
    ```
 4. Ejecuta el script de compilación:
    ```bash

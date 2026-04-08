@@ -34,17 +34,14 @@ class BrainCleanerApp(ctk.CTk):
             {
                 "title": "💡 Delete Consequences",
                 "text": "You will free up space, but might lose local chat histories and plugin configurations.",
-                "color": ("#e0e0e0", "#2b2b2b")
             },
             {
                 "title": "🚀 Usage Tips",
                 "text": "Scan weekly to keep your system optimized. Use 'Custom Folder' for specific project cleanups.",
-                "color": ("#d1e7dd", "#0f5132")
             },
             {
                 "title": "⚡ Pro Optimization",
                 "text": "For a full cleanup, close your IDE (Cursor, VSCode) before cleaning temporary files.",
-                "color": ("#fff3cd", "#664d03")
             }
         ]
         self.current_info_index = 0
@@ -145,8 +142,7 @@ class BrainCleanerApp(ctk.CTk):
         self.main = main
 
         # Info Slider
-        self.info_bubble = ctk.CTkFrame(main, fg_color=self.info_states[0]["color"],
-                                        corner_radius=14, border_width=1)
+        self.info_bubble = ctk.CTkFrame(main, corner_radius=14, border_width=1)
         self.info_bubble.grid(row=0, column=0, padx=10, pady=(5, 5), sticky="ew")
         self.info_bubble.grid_columnconfigure(1, weight=1)
 
@@ -156,12 +152,12 @@ class BrainCleanerApp(ctk.CTk):
                       ).grid(row=0, column=0, rowspan=2, padx=(8, 0))
 
         self.info_title = ctk.CTkLabel(self.info_bubble, text=self.info_states[0]["title"],
-                                       font=ctk.CTkFont(size=13, weight="bold"))
-        self.info_title.grid(row=0, column=1, pady=(8, 0))
+                                       font=ctk.CTkFont(size=13, weight="bold"), anchor="w")
+        self.info_title.grid(row=0, column=1, pady=(8, 0), sticky="ew", padx=(8, 0))
 
         self.info_text = ctk.CTkLabel(self.info_bubble, text=self.info_states[0]["text"],
-                                      font=ctk.CTkFont(size=10), wraplength=480, justify="center")
-        self.info_text.grid(row=1, column=1, pady=(0, 4))
+                                      font=ctk.CTkFont(size=10), wraplength=480, justify="left", anchor="w")
+        self.info_text.grid(row=1, column=1, pady=(2, 4), sticky="ew", padx=(8, 0))
 
         ctk.CTkButton(self.info_bubble, text="❯", width=28, fg_color="transparent",
                       hover_color=("#c0c0c0", "#3d3d3d"),
@@ -169,7 +165,7 @@ class BrainCleanerApp(ctk.CTk):
                       ).grid(row=0, column=2, rowspan=2, padx=(0, 8))
 
         dots_f = ctk.CTkFrame(self.info_bubble, fg_color="transparent")
-        dots_f.grid(row=2, column=1, pady=(0, 4))
+        dots_f.grid(row=2, column=1, pady=(0, 6), sticky="w", padx=(8, 0))
         self.dots_labels = []
         for i in range(len(self.info_states)):
             d = ctk.CTkLabel(dots_f, text="●" if i == 0 else "○", font=ctk.CTkFont(size=9))
@@ -262,7 +258,6 @@ class BrainCleanerApp(ctk.CTk):
         self.after(150, lambda: self.info_bubble.configure(border_width=1))
         self.info_title.configure(text=state["title"])
         self.info_text.configure(text=state["text"])
-        self.info_bubble.configure(fg_color=state["color"])
         for i, dot in enumerate(self.dots_labels):
             dot.configure(text="●" if i == self.current_info_index else "○")
 
@@ -397,7 +392,7 @@ class BrainCleanerApp(ctk.CTk):
                                         width=72, anchor="e")
                 size_lbl.grid(row=0, column=2, padx=(0, 10), pady=6)
 
-                disp = path.replace(str(Path.home()), "~")
+                disp = path
                 path_lbl = ctk.CTkLabel(row, text=disp,
                                         font=ctk.CTkFont(size=11, weight="bold"), anchor="w")
                 path_lbl.grid(row=0, column=3, padx=(0, 10), pady=6, sticky="ew")

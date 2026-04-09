@@ -28,6 +28,8 @@ class BrainCleanerCLI:
         self.term = Terminal()
         self.scanner = BrainScanner()
         self.start_path = start_path
+        self.selected_path = start_path # Default to provided start_path
+
         self.dry_run = dry_run
         self.delete_all = delete_all
         self.sort_by = sort_by
@@ -59,7 +61,25 @@ class BrainCleanerCLI:
         sys.stdout.write(output)
         sys.stdout.flush()
 
-    def _apply_mode_filter(self, mode):
+    def draw_path_selector(self):
+        content = []
+        content.append(self.term.cyan(ASCII_ART))
+        content.append(self.term.bold(f"\n  Mode: {self.term.yellow(self.mode.upper() if self.mode else '')}"))
+        content.append("  " + "-" * 40)
+        content.append("\n  Select Scan Path:")
+        content.append(self.term.blue("  [1] User Home (~)"))
+        content.append(self.term.green("  [2] Entire System (/)"))
+        content.append(self.term.magenta("  [3] External Disks (/Volumes)"))
+        content.append("\n  Press 'b' to go back, 'q' to exit")
+        
+        output = self.term.home + self.term.clear + "\n".join(content)
+        sys.stdout.write(output)
+        sys.stdout.flush()
+
+    def _apply_mode_filter(self, mode, path=None):
+        # Use provided path or fallback to self.start_path
+        scan_root = path if path else self.start_path
+        
         # Mutual exclusivity like GUI
         if mode == 'ai':
             self.scanner.categories = {k: v for k, v in self.scanner.categories.items() if k != "Node Modules"}
@@ -67,13 +87,14 @@ class BrainCleanerCLI:
             self.scanner.categories = {k: v for k, v in self.scanner.categories.items() if k == "Node Modules"}
         self.scanner.all_patterns = [p for patterns in self.scanner.categories.values() for p in patterns]
         
-        self.status_msg = f"Scanning {mode.upper()} residues..."
-        thread = threading.Thread(target=self._scan_worker, daemon=True)
+        self.status_msg = f"Scanning {mode.upper()} residues in {scan_root}..."
+        thread = threading.Thread(target=self._scan_worker, args=(scan_root,), daemon=True)
         thread.start()
 
-    def _scan_worker(self):
+    def _scan_worker(self, path):
         try:
-            for cat, path, size_str, size_bytes in self.scanner.scan_stream(self.start_path, self.interrupt_event):
+            for cat, path, size_str, size_bytes in self.scanner.scan_stream(path, self.interrupt_event):
+
                 self.results.append({
                     'cat': cat,
                     'path': path,
@@ -231,79 +252,102 @@ class BrainCleanerCLI:
 
     def run(self):
         with self.term.fullscreen(), self.term.cbreak(), self.term.hidden_cursor():
-            # Step 0: Splash & Mode Selection
-            while self.mode is None:
-                self.draw_splash()
-                val = self.term.inkey(timeout=0.1)
-                if val == '1':
-                    self.mode = 'ai'
-                    self._apply_mode_filter('ai')
-                elif val == '2':
-                    self.mode = 'npm'
-                    self._apply_mode_filter('npm')
-                elif val.lower() == 'q':
-                    return
-
-            # Skip TUI if delete_all is set (not typical for interactive run, but supported)
-            if self.delete_all and not self.dry_run:
-                print(self.term.home + self.term.clear + f"[*] Starting automatic deletion in: {self.start_path}")
-                count = 0
-                for cat, path, size_str, size_bytes in self.scanner.scan_stream(self.start_path):
-                    success, msg = self.scanner.delete_folder(path)
-                    if success:
-                        print(f" [OK] Deleted: {path} ({size_str})")
-                        self.total_saved_bytes += size_bytes
-                        count += 1
-                    else:
-                        print(f" [ERR] {msg}")
-                print(f"\n[+] Done. Deleted {count} items. Total saved: {self.scanner.format_size(self.total_saved_bytes)}")
-                print("\nPress any key to exit.")
-                self.term.inkey()
-                return
-            
-            # Step 1: Main TUI Loop
+            state = "SELECT_MODE"
+            path_mapping = {
+                '1': str(Path.home()),
+                '2': '/',
+                '3': '/Volumes'
+            }
             targets_to_delete = []
-            while True:
-                self.draw()
-                val = self.term.inkey(timeout=0.1)
-                
-                # If confirming, only Y/N work
-                if self.confirmation_target:
-                    if val.lower() == 'y':
-                        self.execute_deletion(targets_to_delete)
-                        targets_to_delete = []
-                    elif val.lower() == 'n' or val.code == self.term.KEY_ESCAPE:
-                        self.confirmation_target = None
-                        targets_to_delete = []
-                    continue
 
-                if val.code == self.term.KEY_DOWN:
-                    visible_results = [r for r in self.results if not r['deleted']]
-                    self.cursor_idx = min(self.cursor_idx + 1, len(visible_results) - 1)
-                elif val.code == self.term.KEY_UP:
-                    self.cursor_idx = max(self.cursor_idx - 1, 0)
-                elif val == ' ' or val.code == self.term.KEY_ENTER:
-                    targets_to_delete = self.handle_delete()
-                elif val.lower() == 'm':
-                    visible_results = [r for r in self.results if not r['deleted']]
-                    if visible_results:
-                        visible_results[self.cursor_idx]['selected'] = not visible_results[self.cursor_idx]['selected']
-                elif val.lower() == 'a':
-                    self.all_selected = not self.all_selected
-                    for r in self.results:
-                        if not r['deleted']:
-                            r['selected'] = self.all_selected
-                elif val.lower() == 'b':
-                    self.interrupt_event.set()
-                    self.interrupt_event = threading.Event() # Reset
-                    self.mode = None
-                    self.results = []
-                    self.cursor_idx = 0
-                    self.scroll_pos = 0
-                    break
-                elif val.lower() == 'q':
-                    self.interrupt_event.set()
-                    return
+            while True:
+                if state == "SELECT_MODE":
+                    self.draw_splash()
+                    val = self.term.inkey(timeout=0.1)
+                    if val == '1':
+                        self.mode = 'ai'
+                        state = "SELECT_PATH"
+                    elif val == '2':
+                        self.mode = 'npm'
+                        state = "SELECT_PATH"
+                    elif val.lower() == 'q':
+                        return
+
+                elif state == "SELECT_PATH":
+                    self.draw_path_selector()
+                    val = self.term.inkey(timeout=0.1)
+                    if val in path_mapping:
+                        self.selected_path = path_mapping[val]
+                        
+                        # Handle delete_all shortcut if needed (legacy support)
+                        if self.delete_all and not self.dry_run:
+                            print(self.term.home + self.term.clear + f"[*] Starting automatic deletion in: {self.selected_path}")
+                            count = 0
+                            for cat, p, s_str, s_bytes in self.scanner.scan_stream(self.selected_path):
+                                success, msg = self.scanner.delete_folder(p)
+                                if success:
+                                    print(f" [OK] Deleted: {p} ({s_str})")
+                                    self.total_saved_bytes += s_bytes
+                                    count += 1
+                                else:
+                                    print(f" [ERR] {msg}")
+                            print(f"\n[+] Done. Deleted {count} items. Total saved: {self.scanner.format_size(self.total_saved_bytes)}")
+                            print("\nPress any key to exit.")
+                            self.term.inkey()
+                            return
+
+                        self._apply_mode_filter(self.mode, self.selected_path)
+                        state = "SCANNING"
+                    elif val.lower() == 'b':
+                        self.mode = None
+                        state = "SELECT_MODE"
+                    elif val.lower() == 'q':
+                        return
+
+                elif state == "SCANNING":
+                    self.draw()
+                    val = self.term.inkey(timeout=0.1)
+                    
+                    # If confirming, only Y/N work
+                    if self.confirmation_target:
+                        if val.lower() == 'y':
+                            self.execute_deletion(targets_to_delete)
+                            targets_to_delete = []
+                        elif val.lower() == 'n' or val.code == self.term.KEY_ESCAPE:
+                            self.confirmation_target = None
+                            targets_to_delete = []
+                        continue
+
+                    if val.code == self.term.KEY_DOWN:
+                        visible_results = [r for r in self.results if not r['deleted']]
+                        self.cursor_idx = min(self.cursor_idx + 1, len(visible_results) - 1)
+                    elif val.code == self.term.KEY_UP:
+                        self.cursor_idx = max(self.cursor_idx - 1, 0)
+                    elif val == ' ' or val.code == self.term.KEY_ENTER:
+                        targets_to_delete = self.handle_delete()
+                    elif val.lower() == 'm':
+                        visible_results = [r for r in self.results if not r['deleted']]
+                        if visible_results:
+                            visible_results[self.cursor_idx]['selected'] = not visible_results[self.cursor_idx]['selected']
+                    elif val.lower() == 'a':
+                        self.all_selected = not self.all_selected
+                        for r in self.results:
+                            if not r['deleted']:
+                                r['selected'] = self.all_selected
+                    elif val.lower() == 'b':
+                        self.interrupt_event.set()
+                        self.interrupt_event = threading.Event() # Reset
+                        self.mode = None
+                        self.selected_path = None
+                        self.results = []
+                        self.cursor_idx = 0
+                        self.scroll_pos = 0
+                        self.is_scanning = True # Reset for next scan
+                        state = "SELECT_MODE"
+                    elif val.lower() == 'q':
+                        self.interrupt_event.set()
+                        return
+
 
 def main():
     parser = argparse.ArgumentParser(description="Brain Cleaner CLI - Interactive Residue Removal")

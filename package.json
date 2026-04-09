@@ -1,7 +1,7 @@
 {
   "name": "brain-cleaner",
-  "version": "1.2.1",
-  "description": "System residue cleaner for AI tools and NPM modules",
+  "version": "1.2.2",
+  "description": "Professional CLI utility to reclaim disk space by removing residues from AI tools (Gemini, Claude, Cursor) and heavy node_modules folders. Optimized for system performance and digital decluttering.",
   "main": "bin/brain-cleaner.js",
   "bin": {
     "brain-cleaner": "bin/brain-cleaner.js"
@@ -9,6 +9,14 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/konstantinwdk/brain-cleaner.git"
+  },
+  "bugs": {
+    "url": "https://github.com/konstantinwdk/brain-cleaner/issues"
+  },
+  "homepage": "https://github.com/konstantinwdk/brain-cleaner#readme",
   "author": "Konstantin <info@webdesignerk.com>",
   "license": "MIT",
   "keywords": [
@@ -17,13 +25,15 @@
     "system",
     "npm",
     "node_modules",
-    "disk-space"
+    "disk-space",
+    "ai-tools-cleaner",
+    "gemini",
+    "claude",
+    "cursor-cleaner",
+    "cleanup-utility",
+    "developer-tools"
   ],
   "engines": {
     "node": ">=14.0.0"
-  },
-  "bugs": {
-    "url": "https://github.com/konstantinwdk/brain-cleaner/issues"
-  },
-  "homepage": "https://github.com/konstantinwdk/brain-cleaner#readme"
+  }
 }

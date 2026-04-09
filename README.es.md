@@ -31,11 +31,6 @@ pip install git+https://github.com/konstantinwdk/brain-cleaner
 
 ---
 
-**Brain Cleaner** es una utilidad profesional para terminal diseñada para liberar espacio en disco eliminando el ruido digital:
-- **Limpieza de IA** — Detecta caché, logs y archivos de configuración de Gemini, Claude, Cursor, Windsurf y más.
-- **Optimización NPM** — Localiza y elimina carpetas `node_modules` pesadas de tus proyectos de desarrollo.
-- **Interfaz Interactiva (TUI)** — Una consola rápida y segura con selección granular y confirmación de borrado.
-
 ## Inicio Rápido (Instalación y Ejecución)
 
 ### Instalación (Modo Consola)

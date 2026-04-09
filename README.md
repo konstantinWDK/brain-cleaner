@@ -1,12 +1,24 @@
 # Brain Cleaner
 
+[![NPM Version](https://img.shields.io/npm/v/brain-cleaner.svg)](https://www.npmjs.com/package/brain-cleaner)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+
 **Language / Idioma:**
 🇬🇧 English &nbsp;|&nbsp; [🇪🇸 Español](https://github.com/konstantinWDK/brain-cleaner/blob/main/README.es.md)
+
+---
 
 **Brain Cleaner** is a professional CLI utility designed to reclaim disk space by identifying and removing digital noise:
 - **AI Residue Cleaner** — Finds cache, logs, and config files from Gemini, Claude, Cursor, Windsurf, and more.
 - **NPM Optimization** — Detects and safely deletes heavy `node_modules` folders from your development projects.
 - **Interactive UI** — High-performance terminal interface with granular selection and safety checks.
+
+### ⚙️ Technical Architecture
+While distributed via NPM for ease of use, Brain Cleaner is a hybrid tool. The Node.js wrapper automatically:
+1. Detects your local Python environment.
+2. **Auto-installs missing dependencies** (`blessed`, `Pillow`) on first run.
+3. Seamlessly executes the core Python cleaning engine.
 
 ### 🚀 Recommended Installation (Global)
 Install directly from NPM to get the latest stable version:

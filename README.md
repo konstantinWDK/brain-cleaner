@@ -7,6 +7,8 @@
 **Language / Idioma:**
 🇬🇧 English &nbsp;|&nbsp; [🇪🇸 Español](https://github.com/konstantinWDK/brain-cleaner/blob/main/README.es.md)
 
+![Brain Cleaner UI Demo](./assets/ui-demo.png)
+
 ---
 
 **Brain Cleaner** is a professional CLI utility designed to reclaim disk space by identifying and removing digital noise:

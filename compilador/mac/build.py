@@ -8,6 +8,8 @@ from pathlib import Path
 PLATFORM = "mac"
 APP_NAME = "BrainCleaner"
 MAIN_FILE = os.path.join("..", "..", "app.py")
+ASSETS_DIR = os.path.join("..", "..", "assets")
+ICON_FILE = os.path.join(ASSETS_DIR, "icon.png")
 
 def get_python_interpreter():
     """Find the best python interpreter for building (preferring Homebrew/3.11)"""
@@ -50,6 +52,8 @@ def build():
         "--onedir",            # Mejor rendimiento y requerido para .app en macOS
         f"--name={APP_NAME}",
         f"--add-data={ctk_path}{separator}customtkinter",
+        f"--add-data={ASSETS_DIR}{separator}assets",
+        f"--icon={ICON_FILE}",
         "--collect-all", "customtkinter",
         "--collect-all", "darkdetect",
         "--osx-bundle-identifier", "com.braincleaner.app",
@@ -60,7 +64,36 @@ def build():
     print(f" [*] Compilando para {PLATFORM.upper()}...")
     try:
         subprocess.check_call(cmd)
-        print(f" [+] Hecho. Revisa la carpeta 'dist/{APP_NAME}.app'")
+        print(f" [+] Compilación terminada. Creando DMG con instalador arrastrable...")
+        
+        dmg_root = "dist/dmg_builder"
+        if os.path.exists(dmg_root):
+            shutil.rmtree(dmg_root)
+        os.makedirs(dmg_root)
+        
+        # Copiar app y crear enlace a Applications
+        app_path = f"dist/{APP_NAME}.app"
+        shutil.copytree(app_path, f"{dmg_root}/{APP_NAME}.app")
+        os.symlink("/Applications", f"{dmg_root}/Applications")
+        
+        # Construir DMG
+        dmg_path = f"dist/{APP_NAME}-macOS.dmg"
+        if os.path.exists(dmg_path):
+            os.remove(dmg_path)
+            
+        hdiutil_cmd = [
+            "hdiutil", "create", "-volname", f"{APP_NAME} Installer", 
+            "-srcfolder", dmg_root, "-ov", "-format", "UDZO", dmg_path
+        ]
+        
+        # Silenciar la salida de hdiutil para mantener la terminal limpia
+        subprocess.check_output(hdiutil_cmd)
+        
+        # Limpiar temporal
+        shutil.rmtree(dmg_root)
+        
+        print(f" [🚀] ÉXITO: Instalador generado correctamente en '{dmg_path}'")
+        
     except subprocess.CalledProcessError as e:
         print(f" [!] Error en la compilación: {e}")
 

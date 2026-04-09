@@ -10,6 +10,19 @@ from pathlib import Path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from scanner import BrainScanner
 
+ASCII_ART = r"""
+  ____  ____      _    ___ _   _ 
+ | __ )|  _ \    / \  |_ _| \ | |
+ |  _ \| |_) |  / _ \  | ||  \| |
+ | |_) |  _ <  / ___ \ | || |\  |
+ |____/|_| \_\/_/   \_\___|_| \_|
+  ____ _     _____    _    _   _ _____ ____  
+ / ___| |   | ____|  / \  | \ | | ____|  _ \ 
+| |   | |   |  _|   / _ \ |  \| |  _| | |_) |
+| |___| |___| |___ / ___ \| |\  | |___|  _ < 
+ \____|_____|_____/_/   \_\_| \_|_____|_| \_\
+"""
+
 class BrainCleanerCLI:
     def __init__(self, start_path, dry_run=False, delete_all=False, sort_by='path'):
         self.term = Terminal()
@@ -24,10 +37,27 @@ class BrainCleanerCLI:
         self.is_scanning = True
         self.scroll_pos = 0
         self.interrupt_event = threading.Event()
-        self.status_msg = "Scanning..."
+        self.status_msg = "Waiting for selection..."
         self.total_saved_bytes = 0
+        self.mode = None # 'ai' or 'npm'
 
-    def start_scan_thread(self):
+    def show_splash(self):
+        print(self.term.home + self.term.clear)
+        print(self.term.cyan(ASCII_ART))
+        print(self.term.bold("\n  Welcome to Brain Cleaner CLI v1.1.0"))
+        print("  " + "-" * 40)
+        print("\n  Select Mode to begin:")
+        print(self.term.blue("  [1] AI Tools Cleanup"))
+        print(self.term.green("  [2] NPM Modules Cleanup"))
+        print("\n  Press 'q' to exit")
+
+    def _apply_mode_filter(self, mode):
+        # Mutual exclusivity like GUI
+        if mode == 'ai':
+            self.scanner.categories = {k: v for k, v in self.scanner.categories.items() if k != "Node Modules"}
+        else:
+            self.scanner.categories = {k: v for k, v in self.scanner.categories.items() if k == "Node Modules"}
+        self.scanner.all_patterns = [p for patterns in self.scanner.categories.values() for p in patterns]
         thread = threading.Thread(target=self._scan_worker, daemon=True)
         thread.start()
 
@@ -140,6 +170,21 @@ class BrainCleanerCLI:
             self.status_msg = f"[Dry Run] Would delete {target['path']}"
 
     def run(self):
+        # Step 0: Splash & Mode Selection
+        with self.term.cbreak(), self.term.hidden_cursor():
+            while self.mode is None:
+                self.show_splash()
+                val = self.term.inkey(timeout=0.5)
+                if val == '1':
+                    self.mode = 'ai'
+                    self._apply_mode_filter('ai')
+                elif val == '2':
+                    self.mode = 'npm'
+                    self._apply_mode_filter('npm')
+                elif val.lower() == 'q':
+                    return
+
+        # Step 1: Scanner Execution
         if self.delete_all and not self.dry_run:
             print(f"[*] Starting automatic deletion in: {self.start_path}")
             count = 0

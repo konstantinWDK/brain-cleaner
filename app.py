@@ -1,12 +1,9 @@
 import os
 import sys
 
-# macOS Compatibility fixes (must be before ANY gui import)
-if sys.platform == "darwin":
-    os.environ["SYSTEM_VERSION_COMPAT"] = "0"
-    os.environ["NSUnbufferedIO"] = "YES"
-
+# macOS Compatibility fixes (handled by system environment)
 import customtkinter as ctk
+
 import threading
 import subprocess
 from scanner import BrainScanner

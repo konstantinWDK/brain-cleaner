@@ -55,8 +55,14 @@ brain-cleaner
 ```
 *Tip: Use the CLI for fast, keyboard-driven system cleaning.*
 
-> [!TIP]
-> On macOS, use the Homebrew Python to avoid GUI crashes: `brew install python@3.11`
+> [!IMPORTANT]
+> **macOS 26 (Tahoe) Compatibility**: Use Homebrew Python 3.11 or later to avoid "macOS 26 required" errors in GUI mode.
+> ```bash
+> brew install python@3.11 python-tk@3.11
+> python3.11 -m venv .venv
+> source .venv/bin/activate
+> pip install .
+> ```
 
 ## Usage
 

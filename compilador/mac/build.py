@@ -12,8 +12,13 @@ ASSETS_DIR = os.path.join("..", "..", "assets")
 ICON_FILE = os.path.join(ASSETS_DIR, "icon.png")
 
 def get_python_interpreter():
-    """Find the best python interpreter for building (preferring Homebrew/3.11)"""
-    # Check for brew python 3.11 first as it handles macOS GUI better
+    """Find the best python interpreter for building (preferring .venv_gui/3.11)"""
+    # Check for our GUI environment first
+    venv_gui_python = os.path.join("..", "..", ".venv_gui", "bin", "python3")
+    if os.path.exists(venv_gui_python):
+        return venv_gui_python
+    
+    # Fallback to brew python 3.11
     brew_python = "/opt/homebrew/bin/python3.11"
     if os.path.exists(brew_python):
         return brew_python

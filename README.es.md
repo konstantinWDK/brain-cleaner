@@ -1,4 +1,4 @@
-# 🧠 Brain Cleaner
+# Brain Cleaner
 
 **Language / Idioma:**
 [🇬🇧 English](https://github.com/konstantinWDK/brain-cleaner/blob/main/README.md) &nbsp;|&nbsp; 🇪🇸 Español
@@ -11,13 +11,13 @@
 
 **Brain Cleaner** es una utilidad de escritorio para encontrar y eliminar archivos residuales dejados por herramientas de IA (Gemini, Claude, Cursor, Windsurf…) y carpetas `node_modules` pesadas.
 
-## 🎯 Características Principales
+## Características Principales
 
-- 🤖 **Limpiador de IA** — Detecta y elimina caché, logs y configuraciones de asistentes de IA.
-- 📦 **Revisor de NPM** — Libera espacio en disco detectando y eliminando carpetas `node_modules` de proyectos web.
-- 🔍 **Selección Granular** — Árbol de archivos interactivo para revisar y excluir dependencias individuales antes de borrar.
+- Limpiador de IA — Detecta y elimina caché, logs y configuraciones de asistentes de IA.
+- Revisor de NPM — Libera espacio en disco detectando y eliminando carpetas `node_modules` de proyectos web.
+- Selección Granular — Árbol de archivos interactivo para revisar y excluir dependencias individuales antes de borrar.
 
-## 🚀 Inicio Rápido (Instalación y Ejecución)
+## Inicio Rápido (Instalación y Ejecución)
 
 Para ejecutar la aplicación de forma segura desde el código fuente, usa estos comandos:
 
@@ -36,11 +36,11 @@ python3.11 app.py
 
 ## Uso
 
-1. **Ubicación** — Elige `🏠 Home`, `💻 Full System` o `📁 Custom Folder` en la barra lateral.
-2. **Modo** — Elige entre `🤖 AI Tools` o `📦 NPM Modules` según lo que quieras escanear.
-3. **Escanear** — Pulsa `🚀 START SCAN`. Los resultados aparecen en dos secciones diferenciadas.
+1. **Ubicación** — Elige `Home`, `Full System` o `Custom Folder` en la barra lateral.
+2. **Modo** — Elige entre `AI Tools` o `NPM Modules` según lo que quieras escanear.
+3. **Escanear** — Pulsa `START SCAN`. Los resultados aparecen en dos secciones diferenciadas.
 4. **Revisar** — Haz clic en `›` para desplegar el contenido de una carpeta. Puedes marcar o desmarcar elementos individuales.
-5. **Limpiar** — Usa `✨ Clean Selected` para los elementos marcados o `🗑️ Clean All (Visible)` para todo lo visible en el filtro activo.
+5. **Limpiar** — Usa `Clean Selected` para los elementos marcados o `Clean All (Visible)` para todo lo visible en el filtro activo.
 
 > [!WARNING]
 > La eliminación es **permanente**. No hay papelera de reciclaje. Revisa bien antes de limpiar.
@@ -57,4 +57,4 @@ python3.11 app.py
 
 ## Licencia
 
-MIT — *Desarrollado con ❤️ para mantener tu sistema libre de ruido digital.*
+MIT — *Desarrollado para mantener tu sistema libre de ruido digital.*

@@ -11,6 +11,7 @@ import threading
 import subprocess
 from scanner import BrainScanner
 from pathlib import Path
+from PIL import Image
 
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
@@ -30,6 +31,17 @@ class BrainCleanerApp(ctk.CTk):
         self.current_scan_path = str(Path.home())
         self.current_loc_type = "Home"
 
+        # Load Icon
+        assets_dir = os.path.join(os.path.dirname(__file__), "assets")
+        icon_ui_path = os.path.join(assets_dir, "icon_ui.png")
+        self.logo_image = None
+        if os.path.exists(icon_ui_path):
+            try:
+                img = Image.open(icon_ui_path)
+                self.logo_image = ctk.CTkImage(light_image=img, dark_image=img, size=(42, 42))
+            except Exception:
+                pass
+
         # Category definitions
         self.AI_CATS  = ["Gemini", "Claude", "IDE Agents", "Other Tools"]
         self.NPM_CATS = ["Node Modules"]
@@ -37,15 +49,15 @@ class BrainCleanerApp(ctk.CTk):
         # Info slider data
         self.info_states = [
             {
-                "title": "💡 Delete Consequences",
+                "title": "Delete Consequences",
                 "text": "You will free up space, but might lose local chat histories and plugin configurations.",
             },
             {
-                "title": "🚀 Usage Tips",
+                "title": "Usage Tips",
                 "text": "Scan weekly to keep your system optimized. Use 'Custom Folder' for specific project cleanups.",
             },
             {
-                "title": "⚡ Pro Optimization",
+                "title": "Pro Optimization",
                 "text": "For a full cleanup, close your IDE (Cursor, VSCode) before cleaning temporary files.",
             }
         ]
@@ -62,13 +74,16 @@ class BrainCleanerApp(ctk.CTk):
         self.sidebar.grid_columnconfigure(0, weight=1)
 
         title_f = ctk.CTkFrame(self.sidebar, fg_color="transparent")
-        title_f.grid(row=0, column=0, padx=20, pady=(20, 15), sticky="ew")
+        title_f.grid(row=0, column=0, padx=20, pady=(15, 15), sticky="ew")
         
-        ctk.CTkLabel(title_f, text="🧠 Brain Cleaner",
-                     font=ctk.CTkFont(size=20, weight="bold")
+        if self.logo_image:
+            ctk.CTkLabel(title_f, text="", image=self.logo_image).pack(pady=(0, 8))
+
+        ctk.CTkLabel(title_f, text="Brain Cleaner",
+                     font=ctk.CTkFont(size=19, weight="bold")
                      ).pack(pady=(0, 2))
         ctk.CTkLabel(title_f, text="v1.1.0",
-                     font=ctk.CTkFont(size=11, slant="italic"), text_color="#a0a0a0"
+                     font=ctk.CTkFont(size=11, slant="italic"), text_color="#a1a1a1"
                      ).pack()
 
         # Location
@@ -76,17 +91,17 @@ class BrainCleanerApp(ctk.CTk):
                      font=ctk.CTkFont(size=12, weight="bold")
                      ).grid(row=1, column=0, padx=20, pady=(0, 5), sticky="ew")
 
-        self.home_btn = ctk.CTkButton(self.sidebar, text="🏠  Home",
+        self.home_btn = ctk.CTkButton(self.sidebar, text="Home",
                                       command=lambda: self.set_location("Home"),
                                       fg_color="transparent", border_width=1, anchor="w")
         self.home_btn.grid(row=2, column=0, padx=20, pady=3, sticky="ew")
 
-        self.system_btn = ctk.CTkButton(self.sidebar, text="💻  Full System",
+        self.system_btn = ctk.CTkButton(self.sidebar, text="Full System",
                                         command=lambda: self.set_location("System"),
                                         fg_color="transparent", border_width=1, anchor="w")
         self.system_btn.grid(row=3, column=0, padx=20, pady=3, sticky="ew")
 
-        self.custom_folder_btn = ctk.CTkButton(self.sidebar, text="📁  Custom Folder",
+        self.custom_folder_btn = ctk.CTkButton(self.sidebar, text="Custom Folder",
                                                command=self.select_custom_folder,
                                                fg_color="transparent", border_width=1, anchor="w")
         self.custom_folder_btn.grid(row=4, column=0, padx=20, pady=3, sticky="ew")
@@ -100,14 +115,14 @@ class BrainCleanerApp(ctk.CTk):
 
         self.scan_mode_var = ctk.StringVar(value="ai")
 
-        ctk.CTkRadioButton(self.sidebar, text="🤖  AI Tools",
+        ctk.CTkRadioButton(self.sidebar, text="AI Tools",
                            variable=self.scan_mode_var, value="ai",
                            font=ctk.CTkFont(size=12), border_color="#1f538d",
                            hover_color="#1f538d", fg_color="#1f538d",
                            command=self._update_mode_ui
                            ).grid(row=6, column=0, padx=24, pady=2, sticky="w")
 
-        ctk.CTkRadioButton(self.sidebar, text="📦  NPM Modules",
+        ctk.CTkRadioButton(self.sidebar, text="NPM Modules",
                            variable=self.scan_mode_var, value="npm",
                            font=ctk.CTkFont(size=12), border_color="#2e7d32",
                            hover_color="#2e7d32", fg_color="#2e7d32",
@@ -120,7 +135,7 @@ class BrainCleanerApp(ctk.CTk):
         bottom.grid_columnconfigure(0, weight=1)
 
         self.run_scan_button = ctk.CTkButton(
-            bottom, text="🚀\n\nSTART SCAN",
+            bottom, text="START SCAN",
             command=lambda: self.start_scan(self.current_scan_path),
             fg_color="#1f538d", hover_color="#14375e",
             height=130, corner_radius=18,
@@ -128,7 +143,7 @@ class BrainCleanerApp(ctk.CTk):
         self.run_scan_button.grid(row=0, column=0, pady=(0, 15), sticky="ew")
 
         self.stop_scan_button = ctk.CTkButton(
-            bottom, text="🛑\n\nSTOP",
+            bottom, text="STOP",
             command=self.stop_scan, fg_color="#d32f2f", hover_color="#b71c1c",
             height=130, corner_radius=18,
             font=ctk.CTkFont(size=15, weight="bold"))
@@ -136,14 +151,14 @@ class BrainCleanerApp(ctk.CTk):
         self.stop_scan_button.grid_remove()
 
         self.clean_selected_button = ctk.CTkButton(
-            bottom, text="✨ Clean Selected",
+            bottom, text="Clean Selected",
             command=self.clean_selected, state="disabled",
             fg_color="#2b71b1", hover_color="#1a4d7d",
             height=38, font=ctk.CTkFont(weight="bold"))
         self.clean_selected_button.grid(row=1, column=0, pady=4, sticky="ew")
 
         self.clean_all_button = ctk.CTkButton(
-            bottom, text="🗑️ Clean All (Visible)",
+            bottom, text="Clean All (Visible)",
             command=self.clean_all, state="disabled",
             fg_color="transparent", border_width=1,
             text_color=("#d32f2f", "#ff6666"), height=30)
@@ -250,7 +265,7 @@ class BrainCleanerApp(ctk.CTk):
         txt_f = ctk.CTkFrame(self.scan_header_frame, fg_color="transparent")
         txt_f.pack(side="left", fill="x", expand=True, padx=12, pady=10)
         
-        self.scan_header_title = ctk.CTkLabel(txt_f, text="🤖 AI Tools Cleanup", 
+        self.scan_header_title = ctk.CTkLabel(txt_f, text="AI Tools Cleanup", 
                                               font=ctk.CTkFont(size=14, weight="bold"),
                                               text_color="white", anchor="w")
         self.scan_header_title.pack(fill="x")
@@ -298,11 +313,11 @@ class BrainCleanerApp(ctk.CTk):
         mode = self.scan_mode_var.get()
         if mode == "ai":
             self.scan_header_frame.configure(fg_color="#1f538d")
-            self.scan_header_title.configure(text="🤖 AI Tools Cleanup")
+            self.scan_header_title.configure(text="AI Tools Cleanup")
             self.scan_header_desc.configure(text="Identify and remove cache, logs, and configs left by AI assistants (Gemini, Claude, Cursor...).")
         else:
             self.scan_header_frame.configure(fg_color="#2e7d32")
-            self.scan_header_title.configure(text="📦 NPM Modules Cleanup")
+            self.scan_header_title.configure(text="NPM Modules Cleanup")
             self.scan_header_desc.configure(text="Free up space by removing heavy node_modules directories from web projects.")
         self.scan_header_count.configure(text="")
 
@@ -401,7 +416,7 @@ class BrainCleanerApp(ctk.CTk):
         self.create_filter_bubbles(["Scanning..."])
 
         self.scanning_active = True
-        self.scan_icons = ["🔍", "⚡", "🚀", "🛰️", "☄️"]
+        self.scan_icons = ["-", "\\", "|", "/"]
         self.scan_icon_idx = 0
         self._animate_scan()
 
@@ -412,7 +427,7 @@ class BrainCleanerApp(ctk.CTk):
     def _animate_scan(self):
         if getattr(self, "scanning_active", False):
             icon = self.scan_icons[self.scan_icon_idx % len(self.scan_icons)]
-            self.stop_scan_button.configure(text=f"{icon}\n\nSCANNING...")
+            self.stop_scan_button.configure(text=f"{icon} SCANNING...")
             self.scan_icon_idx += 1
             self.after(400, self._animate_scan)
 

@@ -1,4 +1,4 @@
-# 🧠 Brain Cleaner
+# Brain Cleaner
 
 **Language / Idioma:**
 🇬🇧 English &nbsp;|&nbsp; [🇪🇸 Español](https://github.com/konstantinWDK/brain-cleaner/blob/main/README.es.md)
@@ -11,13 +11,13 @@
 
 **Brain Cleaner** is a desktop utility to find and remove residual files left by AI tools (Gemini, Claude, Cursor, Windsurf…) and heavy `node_modules` folders from your system.
 
-## 🎯 Core Features
+## Core Features
 
-- 🤖 **AI Tools Cleaner** — Detects and cleans configuration, cache, and logs from AI assistants.
-- 📦 **NPM Cleaner** — Reclaims disk space by detecting and removing heavy `node_modules` folders.
-- 🔍 **Granular Selection** — Interactive file tree to review and exclude individual files from deletion.
+- AI Tools Cleaner — Detects and cleans configuration, cache, and logs from AI assistants.
+- NPM Cleaner — Reclaims disk space by detecting and removing heavy `node_modules` folders.
+- Granular Selection — Interactive file tree to review and exclude individual files from deletion.
 
-## 🚀 Quick Start
+## Quick Start
 
 To securely run the application from source, type these commands in your console:
 
@@ -36,11 +36,11 @@ python3.11 app.py
 
 ## Usage
 
-1. **Scope** — Choose `🏠 Home`, `💻 Full System` or `📁 Custom Folder` in the sidebar.
-2. **Mode** — Choose between `🤖 AI Tools` or `📦 NPM Modules` to set what to scan.
-3. **Scan** — Click `🚀 START SCAN`. Results appear in two labeled sections.
+1. **Scope** — Choose `Home`, `Full System` or `Custom Folder` in the sidebar.
+2. **Mode** — Choose between `AI Tools` or `NPM Modules` to set what to scan.
+3. **Scan** — Click `START SCAN`. Results appear in two labeled sections.
 4. **Review** — Click `›` on any row to expand its subfolders. Check/uncheck individual items.
-5. **Clean** — Use `✨ Clean Selected` for marked items or `🗑️ Clean All (Visible)` for everything in the active filter.
+5. **Clean** — Use `Clean Selected` for marked items or `Clean All (Visible)` for everything in the active filter.
 
 > [!WARNING]
 > Deletion is **permanent**. There is no recycle bin. Review carefully before cleaning.
@@ -57,4 +57,4 @@ python3.11 app.py
 
 ## License
 
-MIT — *Developed with ❤️ to keep your system free of digital noise.*
+MIT — *Developed to keep your system free of digital noise.*

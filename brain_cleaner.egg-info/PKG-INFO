@@ -29,37 +29,41 @@ Requires-Dist: blessed
 
 ## Quick Start
 
-### Installation
+### Installation (CLI Mode)
 
-You can install **Brain Cleaner** as a system command using `pip`:
+To install **Brain Cleaner** as a global command in your terminal:
 
-### From Source (Development)
-1. Clone this repository.
-2. Run the following command in the root directory:
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/konstantinwdk/brain-cleaner.git
+   ```
+2. **Navigate to the folder**:
+   ```bash
+   cd brain-cleaner
+   ```
+3. **Install the package**:
    ```bash
    pip install .
    ```
 
-### Direct Install from GitHub
-Users can install it without cloning by running:
-```bash
-pip install git+https://github.com/your-username/brain-cleaner.git
-```
+## Installation
 
-## Usage
+To install this console interface as a global command:
 
-Once installed, you can launch the application from anywhere in your terminal:
+1. Open your terminal in the root directory of the project.
+2. Run:
+   ```bash
+   pip install .
+   ```
 
-### GUI Mode
+## Quick Start
+
+Once installed, you can run the interactive interface from anywhere:
+
 ```bash
 brain-cleaner
 ```
-
-### Interactive Console (CLI)
-```bash
-brain-cleaner-cli
-```
-*Note: The CLI is recommended for fast, keyboard-only system maintenance.*
+*Tip: Use the CLI for fast, keyboard-driven system cleaning.*
 
 > [!TIP]
 > On macOS, use the Homebrew Python to avoid GUI crashes: `brew install python@3.11`

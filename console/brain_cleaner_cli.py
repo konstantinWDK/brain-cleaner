@@ -305,7 +305,7 @@ class BrainCleanerCLI:
                     self.interrupt_event.set()
                     return
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="Brain Cleaner CLI - Interactive Residue Removal")
     parser.add_argument("-d", "--dir", default=str(Path.home()), help="Directory to scan")
     parser.add_argument("-t", "--target", help="Specific pattern to search (optional)")
@@ -330,3 +330,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         pass
     print("\nGoodbye!")
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,11 @@
+README.md
+app.py
+pyproject.toml
+scanner.py
+brain_cleaner.egg-info/PKG-INFO
+brain_cleaner.egg-info/SOURCES.txt
+brain_cleaner.egg-info/dependency_links.txt
+brain_cleaner.egg-info/entry_points.txt
+brain_cleaner.egg-info/requires.txt
+brain_cleaner.egg-info/top_level.txt
+console/brain_cleaner_cli.py

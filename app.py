@@ -704,6 +704,9 @@ class BrainCleanerApp(ctk.CTk):
             self.create_filter_bubbles(["Everything clean! ✨"])
 
 
-if __name__ == "__main__":
+def main():
     app = BrainCleanerApp()
     app.mainloop()
+
+if __name__ == "__main__":
+    main()

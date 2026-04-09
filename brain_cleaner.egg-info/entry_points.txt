@@ -1,0 +1,2 @@
+[console_scripts]
+brain-cleaner = console.brain_cleaner_cli:main

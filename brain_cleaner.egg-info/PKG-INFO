@@ -1,3 +1,13 @@
+Metadata-Version: 2.4
+Name: brain-cleaner
+Version: 1.1.0
+Summary: System residue cleaner for AI tools and NPM modules
+Author-email: Konstantin <konstantin@example.com>
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: Pillow
+Requires-Dist: blessed
+
 # Brain Cleaner
 
 **Language / Idioma:**
@@ -19,41 +29,37 @@
 
 ## Quick Start
 
-### Installation (CLI Mode)
+### Installation
 
-To install **Brain Cleaner** as a global command in your terminal:
+You can install **Brain Cleaner** as a system command using `pip`:
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/konstantinwdk/brain-cleaner.git
-   ```
-2. **Navigate to the folder**:
-   ```bash
-   cd brain-cleaner
-   ```
-3. **Install the package**:
+### From Source (Development)
+1. Clone this repository.
+2. Run the following command in the root directory:
    ```bash
    pip install .
    ```
 
-## Installation
+### Direct Install from GitHub
+Users can install it without cloning by running:
+```bash
+pip install git+https://github.com/your-username/brain-cleaner.git
+```
 
-To install this console interface as a global command:
+## Usage
 
-1. Open your terminal in the root directory of the project.
-2. Run:
-   ```bash
-   pip install .
-   ```
+Once installed, you can launch the application from anywhere in your terminal:
 
-## Quick Start
-
-Once installed, you can run the interactive interface from anywhere:
-
+### GUI Mode
 ```bash
 brain-cleaner
 ```
-*Tip: Use the CLI for fast, keyboard-driven system cleaning.*
+
+### Interactive Console (CLI)
+```bash
+brain-cleaner-cli
+```
+*Note: The CLI is recommended for fast, keyboard-only system maintenance.*
 
 > [!TIP]
 > On macOS, use the Homebrew Python to avoid GUI crashes: `brew install python@3.11`

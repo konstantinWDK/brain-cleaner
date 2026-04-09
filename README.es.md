@@ -19,17 +19,31 @@
 
 ## Inicio Rápido (Instalación y Ejecución)
 
-Para ejecutar la aplicación de forma segura desde el código fuente, usa estos comandos:
+### Instalación (Modo Consola)
 
-### 1. Instalar Dependencias
-```bash
-python3.11 -m pip install -r requirements.txt
-```
+Para instalar **Brain Cleaner** como un comando global en tu terminal:
 
-### 2. Arrancar la Aplicación
+1. **Clonar el repositorio**:
+   ```bash
+   git clone https://github.com/konstantinwdk/brain-cleaner.git
+   ```
+2. **Navegar a la carpeta**:
+   ```bash
+   cd brain-cleaner
+   ```
+3. **Instalar el paquete**:
+   ```bash
+   pip install .
+   ```
+
+## Uso
+
+Una vez instalado, puedes arrancar la **Consola Interactiva (CLI)** desde cualquier directorio:
+
 ```bash
-python3.11 app.py
+brain-cleaner
 ```
+*Consejo: Usa el CLI para una limpieza rápida gestionada totalmente por teclado.*
 
 > [!TIP]
 > En macOS usa Python de Homebrew para evitar cierres inesperados: `brew install python@3.11`

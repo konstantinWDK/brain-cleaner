@@ -36,6 +36,13 @@ Para instalar **Brain Cleaner** como un comando global en tu terminal:
    pip install .
    ```
 
+### Instalación (Modo NPM)
+Si prefieres usar NPM, puedes instalarlo globalmente:
+```bash
+npm install -g brain-cleaner
+```
+*Nota: Requiere tener Python 3.9+ instalado en el sistema.*
+
 ## Uso
 
 Una vez instalado, puedes arrancar la **Consola Interactiva (CLI)** desde cualquier directorio:

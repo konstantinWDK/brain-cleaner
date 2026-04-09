@@ -36,6 +36,13 @@ To install **Brain Cleaner** as a global command in your terminal:
    pip install .
    ```
 
+### Installation (NPM Mode)
+If you are coming from the Node.js ecosystem, you can install it globally via NPM:
+```bash
+npm install -g brain-cleaner
+```
+*Note: Requires Python 3.9+ installed on your system.*
+
 ## Installation
 
 To install this console interface as a global command:

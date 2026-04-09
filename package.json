@@ -1,0 +1,29 @@
+{
+  "name": "brain-cleaner",
+  "version": "1.2.0",
+  "description": "System residue cleaner for AI tools and NPM modules",
+  "main": "bin/brain-cleaner.js",
+  "bin": {
+    "brain-cleaner": "bin/brain-cleaner.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Konstantin <info@webdesignerk.com>",
+  "license": "MIT",
+  "keywords": [
+    "cleaner",
+    "ai",
+    "system",
+    "npm",
+    "node_modules",
+    "disk-space"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "bugs": {
+    "url": "https://github.com/konstantinwdk/brain-cleaner/issues"
+  },
+  "homepage": "https://github.com/konstantinwdk/brain-cleaner#readme"
+}

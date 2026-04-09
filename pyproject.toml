@@ -3,7 +3,7 @@ name = "brain-cleaner"
 version = "1.1.0"
 description = "System residue cleaner for AI tools and NPM modules"
 authors = [
-    {name = "Konstantin", email = "konstantin@example.com"},
+    {name = "Konstantin", email = "konstantin@webdesignerk.com"},
 ]
 dependencies = [
     "Pillow",

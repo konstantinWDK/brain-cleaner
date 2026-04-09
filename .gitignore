@@ -21,3 +21,4 @@ dist/
 **/dist/
 **/__pycache__/
 **/*.spec
+.npmrc

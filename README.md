@@ -3,31 +3,31 @@
 **Language / Idioma:**
 🇬🇧 English &nbsp;|&nbsp; [🇪🇸 Español](https://github.com/konstantinWDK/brain-cleaner/blob/main/README.es.md)
 
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Platform macOS](https://img.shields.io/badge/platform-macOS-lightgrey.svg)](https://www.apple.com/macos/)
+**Brain Cleaner** is a professional CLI utility designed to reclaim disk space by identifying and removing digital noise:
+- **AI Residue Cleaner** — Finds cache, logs, and config files from Gemini, Claude, Cursor, Windsurf, and more.
+- **NPM Optimization** — Detects and safely deletes heavy `node_modules` folders from your development projects.
+- **Interactive UI** — High-performance terminal interface with granular selection and safety checks.
 
----
+### 🚀 Recommended Installation (Global)
+Install directly from NPM to get the latest stable version:
 
-**Brain Cleaner** is a desktop utility to find and remove residual files left by AI tools (Gemini, Claude, Cursor, Windsurf…) and heavy `node_modules` folders from your system.
+```bash
+npm install -g brain-cleaner
+```
 
-## Core Features
+#### Alternative: Install from Source (Python)
+If you prefer to install via Python/Pip directly from the repository:
 
-- AI Tools Cleaner — Detects and cleans configuration, cache, and logs from AI assistants.
-- NPM Cleaner — Reclaims disk space by detecting and removing heavy `node_modules` folders.
-- Granular Selection — Interactive file tree to review and exclude individual files from deletion.
+```bash
+pip install git+https://github.com/konstantinwdk/brain-cleaner
+```
+
+### 🚀 Requirements
+- **Python 3.9+** is required.
+- **Node.js 14+** (if installing via NPM).
 
 ## Quick Start
 
-### Installation (CLI Mode)
-
-To install **Brain Cleaner** as a global command in your terminal:
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/konstantinwdk/brain-cleaner.git
-   ```
-2. **Navigate to the folder**:
    ```bash
    cd brain-cleaner
    ```

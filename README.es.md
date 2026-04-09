@@ -1,7 +1,7 @@
 # Brain Cleaner
 
 **Language / Idioma:**
-[🇬🇧 English](https://github.com/konstantinWDK/brain-cleaner/blob/main/README.md) &nbsp;|&nbsp; 🇪🇸 Español
+🇪🇸 Español &nbsp;|&nbsp; [🇬🇧 English](https://github.com/konstantinWDK/brain-cleaner/blob/main/README.md)
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -9,13 +9,32 @@
 
 ---
 
-**Brain Cleaner** es una utilidad de escritorio para encontrar y eliminar archivos residuales dejados por herramientas de IA (Gemini, Claude, Cursor, Windsurf…) y carpetas `node_modules` pesadas.
+### 🚀 Instalación Recomendada (Global)
+Instala directamente desde NPM para obtener la última versión estable:
 
-## Características Principales
+```bash
+npm install -g brain-cleaner
+```
 
-- Limpiador de IA — Detecta y elimina caché, logs y configuraciones de asistentes de IA.
-- Revisor de NPM — Libera espacio en disco detectando y eliminando carpetas `node_modules` de proyectos web.
-- Selección Granular — Árbol de archivos interactivo para revisar y excluir dependencias individuales antes de borrar.
+#### Alternativa: Instalación desde el Código Fuente (Python)
+Si prefieres instalar vía Python/Pip directamente desde el repositorio:
+
+```bash
+pip install git+https://github.com/konstantinwdk/brain-cleaner
+```
+
+---
+
+### 🚀 Requisitos
+- Se requiere **Python 3.9+**.
+- **Node.js 14+** (si se instala por NPM).
+
+---
+
+**Brain Cleaner** es una utilidad profesional para terminal diseñada para liberar espacio en disco eliminando el ruido digital:
+- **Limpieza de IA** — Detecta caché, logs y archivos de configuración de Gemini, Claude, Cursor, Windsurf y más.
+- **Optimización NPM** — Localiza y elimina carpetas `node_modules` pesadas de tus proyectos de desarrollo.
+- **Interfaz Interactiva (TUI)** — Una consola rápida y segura con selección granular y confirmación de borrado.
 
 ## Inicio Rápido (Instalación y Ejecución)
 

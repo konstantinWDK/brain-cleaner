@@ -1,0 +1,24 @@
+# Development environments
+.venv/
+.venv_gui/
+__pycache__/
+*.pyc
+
+# Distribution/Compilers
+compilador/
+build.py
+dist/
+build/
+*.egg-info/
+
+# Icons and Assets (only keep if strictly necessary, but icons are usually in assets/)
+# assets/icon_original.png
+
+# Git
+.git/
+.gitignore
+.DS_Store
+
+# Other
+requirements.txt
+pyproject.toml

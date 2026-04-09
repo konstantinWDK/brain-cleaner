@@ -1,6 +1,6 @@
 {
   "name": "brain-cleaner",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "System residue cleaner for AI tools and NPM modules",
   "main": "bin/brain-cleaner.js",
   "bin": {

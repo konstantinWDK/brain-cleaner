@@ -1,44 +1,42 @@
-# 🍎 Compilación para macOS
+# macOS Build
 
-Este directorio contiene las herramientas para generar el ejecutable de **Brain Cleaner** en macOS.
+This directory contains tools to generate the Brain Cleaner executable for macOS.
 
-## Instrucciones
+## Instructions
 
-1. Abre la Terminal en esta carpeta.
-2. Asegúrate de tener Python 3 instalado (recomendado via Homebrew).
-3. Instala las dependencias:
+1. Open Terminal in this folder.
+2. Ensure Python 3 is installed (recommended via Homebrew).
+3. Install dependencies:
    ```bash
    pip3 install -r ../../requirements.txt
    ```
-4. Ejecuta el script de compilación:
+4. Run the build script:
    ```bash
    python3 build.py
    ```
-5. La aplicación `.app` o el ejecutable se generará en la carpeta `dist/`.
+5. The .app bundle or DMG installer will be generated in the dist/ folder.
 
 ---
 
-## 🛠️ Post-Compilación e Instalación
+## Post-Build & Installation
 
-Debido a las políticas de seguridad de macOS para aplicaciones no firmadas, sigue estos pasos para "instalar" y ejecutar tu app:
+Due to macOS security policies for unsigned apps, follow these steps to install and run your app:
 
-### 1. Permisos de Ejecución
-Si el archivo en `dist/` no abre, dale permisos desde la terminal:
+### 1. Execution Permissions
+If the file in dist/ doesn't open, give it permissions from the terminal:
 ```bash
-chmod +x dist/BrainCleaner_mac
+chmod +x dist/BrainCleaner-macOS.dmg
 ```
 
-### 2. Bypass de Gatekeeper (App no firmada)
-Al abrirla por primera vez, macOS dirá que no puede verificar al desarrollador.
-- **No hagas doble clic**.
-- Haz **clic derecho** sobre el archivo y selecciona **Abrir**.
-- En la ventana emergente, ahora aparecerá un botón de **Abrir**. (Solo tendrás que hacer esto la primera vez).
+### 2. Bypass Gatekeeper (Unsigned App)
+When opening for the first time, macOS will say it cannot verify the developer.
+- **Do not double-click.**
+- **Right-click** the file and select **Open**.
+- In the popup, an **Open** button will now appear. (You only need to do this once).
 
-### 3. Instalación "Pro"
-Para tenerla como una aplicación normal de macOS:
-1. Mueve el archivo `BrainCleaner_mac` a tu carpeta `/Applications` (Aplicaciones).
-2. Opcional: Cámbiale el nombre a simplemente `Brain Cleaner`.
+### 3. Installation
+To install as a normal macOS application:
+1. Open the .dmg and drag the application to your Applications folder.
 
 ---
-*Nota: Este script utiliza el flag `--windowed` necesario para macOS.*
-
+*Note: This script uses the --windowed flag required for macOS GUI apps.*

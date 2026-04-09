@@ -1,20 +1,20 @@
-# 🪟 Compilación para Windows
+# Windows Build
 
-Este directorio contiene las herramientas para generar el ejecutable de **Brain Cleaner** en Windows.
+This directory contains tools to generate the Brain Cleaner executable for Windows.
 
-## Instrucciones
+## Instructions
 
-1. Abre una terminal (PowerShell o CMD) en esta carpeta.
-2. Asegúrate de tener Python instalado y en el PATH.
-3. Instala las dependencias:
+1. Open a terminal (PowerShell or CMD) in this folder.
+2. Ensure Python is installed and in your PATH.
+3. Install dependencies:
    ```bash
    pip install -r ../../requirements.txt
    ```
-4. Ejecuta el script de compilación:
+4. Run the build script:
    ```bash
    python build.py
    ```
-5. El archivo `.exe` se generará en la carpeta `dist/`.
+5. The .exe file will be generated in the dist/ folder.
 
 ---
-*Nota: El script maneja automáticamente los separadores de ruta de Windows.*
+*Note: The script automatically handles Windows path separators.*

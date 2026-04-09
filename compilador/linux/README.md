@@ -1,19 +1,19 @@
-# 🐧 Compilación para Linux
+# Linux Build
 
-Este directorio contiene las herramientas para generar el ejecutable de **Brain Cleaner** en Linux.
+This directory contains tools to generate the Brain Cleaner executable for Linux.
 
-## Instrucciones
+## Instructions
 
-1. Asegúrate de tener Python 3 y `pip` instalados.
-2. Instala las dependencias:
+1. Ensure Python 3 and pip are installed.
+2. Install dependencies:
    ```bash
    pip install -r ../../requirements.txt
    ```
-3. Ejecuta el script de compilación:
+3. Run the build script:
    ```bash
    python3 build.py
    ```
-4. El ejecutable se generará en la carpeta `dist/`.
+4. The executable will be generated in the dist/ folder.
 
 ---
-*Optimizado para distribuciones basadas en Debian/Ubuntu.*
+*Optimized for Debian/Ubuntu-based distributions.*

@@ -1,6 +1,6 @@
 # Brain Cleaner Console (CLI)
 
-Interactive terminal interface to find and remove residual files, inspired by tools like `npkill`.
+Interactive terminal interface to find and remove residual files quickly and efficiently.
 
 ## Quick Start
 

@@ -50,11 +50,12 @@ class BrainCleanerCLI:
     def draw_splash(self):
         content = []
         content.append(self.term.cyan(ASCII_ART))
-        content.append(self.term.bold("\n  Welcome to Brain Cleaner CLI v1.2.2"))
+        content.append(self.term.bold("\n  Welcome to Brain Cleaner CLI v1.2.3"))
         content.append("  " + "-" * 40)
         content.append("\n  Select Mode to begin:")
         content.append(self.term.blue("  [1] AI Tools Cleanup"))
         content.append(self.term.green("  [2] NPM Modules Cleanup"))
+        content.append(self.term.yellow("  [3] Python Envs Cleanup"))
         content.append("\n  Press 'q' to exit")
         
         output = self.term.home + self.term.clear + "\n".join(content)
@@ -82,9 +83,15 @@ class BrainCleanerCLI:
         
         # Mutual exclusivity like GUI
         if mode == 'ai':
-            self.scanner.categories = {k: v for k, v in self.scanner.categories.items() if k != "Node Modules"}
-        else:
+            # AI Categories only
+            ai_cats = ["Gemini", "Claude", "IDE Agents", "Other Tools"]
+            self.scanner.categories = {k: v for k, v in self.scanner.categories.items() if k in ai_cats}
+        elif mode == 'npm':
             self.scanner.categories = {k: v for k, v in self.scanner.categories.items() if k == "Node Modules"}
+        elif mode == 'python':
+            # Both Python Envs and Python Envs (Obsolete) are captured by the scanner.py logic
+            self.scanner.categories = {k: v for k, v in self.scanner.categories.items() if k == "Python Envs"}
+        
         self.scanner.all_patterns = [p for patterns in self.scanner.categories.values() for p in patterns]
         
         self.status_msg = f"Scanning {mode.upper()} residues in {scan_root}..."
@@ -269,6 +276,9 @@ class BrainCleanerCLI:
                         state = "SELECT_PATH"
                     elif val == '2':
                         self.mode = 'npm'
+                        state = "SELECT_PATH"
+                    elif val == '3':
+                        self.mode = 'python'
                         state = "SELECT_PATH"
                     elif val.lower() == 'q':
                         return

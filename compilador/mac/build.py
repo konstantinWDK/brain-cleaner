@@ -5,16 +5,17 @@ import shutil
 from pathlib import Path
 
 # Configuración para MACOS
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PLATFORM = "mac"
 APP_NAME = "BrainCleaner"
-MAIN_FILE = os.path.join("..", "..", "app.py")
-ASSETS_DIR = os.path.join("..", "..", "assets")
+MAIN_FILE = os.path.join(BASE_DIR, "app.py")
+ASSETS_DIR = os.path.join(BASE_DIR, "assets")
 ICON_FILE = os.path.join(ASSETS_DIR, "icon.png")
 
 def get_python_interpreter():
     """Find the best python interpreter for building (preferring .venv_gui/3.11)"""
     # Check for our GUI environment first
-    venv_gui_python = os.path.join("..", "..", ".venv_gui", "bin", "python3")
+    venv_gui_python = os.path.join(BASE_DIR, ".venv_gui", "bin", "python3")
     if os.path.exists(venv_gui_python):
         return venv_gui_python
     

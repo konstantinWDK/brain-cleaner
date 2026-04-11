@@ -5,12 +5,13 @@ import shutil
 from pathlib import Path
 
 # Configuración para WINDOWS
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PLATFORM = "windows"
 APP_NAME = "BrainCleaner"
-MAIN_FILE = os.path.join("..", "..", "app.py")
-ASSETS_DIR = os.path.join("..", "..", "assets")
-# En Windows PyInstaller prefiere archivos .ico, pero puede convertir .png si está Pillow
-ICON_FILE = os.path.join(ASSETS_DIR, "icon.png")
+MAIN_FILE = os.path.join(BASE_DIR, "app.py")
+ASSETS_DIR = os.path.join(BASE_DIR, "assets")
+# En Windows usamos el archivo .ico generado
+ICON_FILE = os.path.join(ASSETS_DIR, "icon.ico")
 
 def get_python_interpreter():
     """Find the best python interpreter for building (Usually just 'python' or 'py' on Windows)"""

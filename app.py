@@ -10,6 +10,16 @@ from scanner import BrainScanner
 from pathlib import Path
 from PIL import Image
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
 
@@ -29,8 +39,7 @@ class BrainCleanerApp(ctk.CTk):
         self.current_loc_type = "Home"
 
         # Load Icon
-        assets_dir = os.path.join(os.path.dirname(__file__), "assets")
-        icon_ui_path = os.path.join(assets_dir, "icon_ui.png")
+        icon_ui_path = resource_path(os.path.join("assets", "icon_ui.png"))
         self.logo_image = None
         if os.path.exists(icon_ui_path):
             try:

@@ -58,7 +58,7 @@ def build():
         python_exe, "-m", "PyInstaller",
         "--noconfirm",
         "--clean",
-        "--onedir",
+        "--onefile",           # Cambio a un único ejecutable portátil
         f"--name={APP_NAME}",
         f"--add-data={ctk_path}{separator}customtkinter",
         f"--add-data={ASSETS_DIR}{separator}assets",
@@ -72,8 +72,8 @@ def build():
     print(f" [*] Compilando para {PLATFORM.upper()}...")
     try:
         subprocess.check_call(cmd)
-        print(f" [+] Compilación terminada. El binario está en 'dist/{APP_NAME}'")
-        print(f" [🚀] Sugerencia: Puedes empaquetarlo como AppImage si lo deseas.")
+        print(f" [+] Compilación terminada. El ejecutable único está en 'dist/{APP_NAME}'")
+        print(f" [🚀] ¡Listo! Ahora es un único archivo 'abrir y listo'.")
         
     except subprocess.CalledProcessError as e:
         print(f" [!] Error en la compilación: {e}")

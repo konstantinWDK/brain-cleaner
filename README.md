@@ -1,5 +1,7 @@
 # Brain Cleaner
 
+![Brain Cleaner Banner](https://braincleaner.dev/og-image.png)
+
 [![NPM Version](https://img.shields.io/npm/v/brain-cleaner.svg)](https://www.npmjs.com/package/brain-cleaner)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
@@ -7,7 +9,7 @@
 **Language / Idioma:**
 🇬🇧 English &nbsp;|&nbsp; [🇪🇸 Español](https://github.com/konstantinWDK/brain-cleaner/blob/main/README.es.md)
 
-![Brain Cleaner UI Demo](./assets/ui-demo.png)
+![Brain Cleaner UI Mockup](https://braincleaner.dev/mockup.png)
 
 ---
 

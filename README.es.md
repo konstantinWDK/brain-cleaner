@@ -1,85 +1,100 @@
 # Brain Cleaner
 
-[![NPM Version](https://img.shields.io/npm/v/brain-cleaner.svg)](https://www.npmjs.com/package/brain-cleaner)
-[![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+![Brain Cleaner Banner](https://braincleaner.dev/og-image.png)
 
 **Language / Idioma:**
 🇪🇸 Español &nbsp;|&nbsp; [🇬🇧 English](https://github.com/konstantinWDK/brain-cleaner/blob/main/README.md)
 
-![Brain Cleaner Demostración de Interfaz](./assets/ui-demo.png)
+![Brain Cleaner UI Mockup](https://braincleaner.dev/mockup.png)
+
+---
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Plataforma macOS](https://img.shields.io/badge/plataforma-macOS-lightgrey.svg)](https://www.apple.com/macos/)
 
 ---
 
-## ¿Por qué Brain Cleaner?
-
-En la era del desarrollo moderno, nuestros sistemas se llenan constantemente de "ruido digital". Cada interacción con asistentes de IA (Gemini, Claude, Cursor), cada proyecto NPM y cada experimento en Python dejan un rastro de registros, caché y entornos virtuales pesados que rápidamente consumen cientos de gigabytes de espacio en disco.
-
-**Brain Cleaner nació para solucionar esto.** Ofrece una interfaz profesional de alto rendimiento para recuperar espacio en disco, atacando precisamente esos residuos de desarrollo que los limpiadores estándar pasan por alto.
-
----
-
-## 🚀 Características Principales
-
-- **Limpiador de Residuos de IA** — Escaneo profundo de caché, logs y configuraciones de Gemini, Claude, Cursor, Windsurf, Trae y más.
-- **Optimización NPM** — Encuentra y elimina de forma segura carpetas `node_modules` pesadas de proyectos olvidados.
-- **Gestión de Entornos Python** — Detecta entornos virtuales obsoletos (`venv`, `.venv`) que no se han tocado en más de 90 días.
-- **Potencia Híbrida** — La facilidad de una instalación global de NPM con el motor de escaneo de alto rendimiento de Python.
-- **Interfaz Interactiva** — Elige entre una elegante GUI de escritorio o una interfaz de línea de comandos (CLI) profesional.
-
----
-
-## ⚙️ Instalación
-
-Instala globalmente a través de NPM para empezar a limpiar inmediatamente:
+### 🚀 Instalación Recomendada (Global)
+Instala directamente desde NPM para obtener la última versión estable:
 
 ```bash
 npm install -g brain-cleaner
 ```
 
-### Requisitos
-- **Python 3.9+** (Requerido para el motor de escaneo).
-- **Node.js 14+**.
+#### Alternativa: Instalación desde el Código Fuente (Python)
+Si prefieres instalar vía Python/Pip directamente desde el repositorio:
+
+```bash
+pip install git+https://github.com/konstantinwdk/brain-cleaner
+```
 
 ---
 
-## 📖 Cómo Usar
+### 🚀 Requisitos
+- Se requiere **Python 3.9+**.
+- **Node.js 14+** (si se instala por NPM).
 
-### 1. Iniciar la Interfaz
-Simplemente ejecuta el comando desde cualquier terminal:
+---
+
+## Inicio Rápido (Instalación y Ejecución)
+
+### Instalación (Modo Consola)
+
+Para instalar **Brain Cleaner** como un comando global en tu terminal:
+
+1. **Clonar el repositorio**:
+   ```bash
+   git clone https://github.com/konstantinwdk/brain-cleaner.git
+   ```
+2. **Navegar a la carpeta**:
+   ```bash
+   cd brain-cleaner
+   ```
+3. **Instalar el paquete**:
+   ```bash
+   pip install .
+   ```
+
+### Instalación (Modo NPM)
+Si prefieres usar NPM, puedes instalarlo globalmente:
+```bash
+npm install -g brain-cleaner
+```
+*Nota: Requiere tener Python 3.9+ instalado en el sistema.*
+
+## Uso
+
+Una vez instalado, puedes arrancar la **Consola Interactiva (CLI)** desde cualquier directorio:
+
 ```bash
 brain-cleaner
 ```
+*Consejo: Usa el CLI para una limpieza rápida gestionada totalmente por teclado.*
 
-### 2. Elige el Alcance
-Selecciona en la barra lateral entre escanear tu directorio **Home**, el **Sistema Completo** o una **Carpeta Personalizada**.
+> [!TIP]
+> En macOS usa Python de Homebrew para evitar cierres inesperados: `brew install python@3.11`
 
-### 3. Selecciona Modo y Escanea
-- **AI Tools**: Para logs y caché de asistentes de IA.
-- **NPM Modules**: Para carpetas `node_modules` pesadas.
-- **Python Envs**: Para identificar entornos virtuales abandonados.
+## Uso
 
-### 4. Revisa y Limpia
-Despliega las entradas para revisar las subcarpetas, marca elementos individuales y haz clic en **Clean Selected** o **Clean All**.
-
----
-
-## 🛠 Detalles Técnicos
-
-Aunque se distribuye a través de NPM, Brain Cleaner es una herramienta híbrida. El wrapper de Node.js automáticamente:
-1. Detecta tu entorno local de Python.
-2. Auto-instala las dependencias principales (`customtkinter`, `blessed`, `Pillow`) en la primera ejecución.
-3. Ejecuta de forma segura el motor de limpieza multiplataforma.
-
----
-
-## ⚠️ Seguridad Primero
+1. **Ubicación** — Elige `Home`, `Full System` o `Custom Folder` en la barra lateral.
+2. **Modo** — Elige entre `AI Tools` o `NPM Modules` según lo que quieras escanear.
+3. **Escanear** — Pulsa `START SCAN`. Los resultados aparecen en dos secciones diferenciadas.
+4. **Revisar** — Haz clic en `›` para desplegar el contenido de una carpeta. Puedes marcar o desmarcar elementos individuales.
+5. **Limpiar** — Usa `Clean Selected` para los elementos marcados o `Clean All (Visible)` para todo lo visible en el filtro activo.
 
 > [!WARNING]
-> La eliminación es **permanente**. Brain Cleaner no mueve archivos a la papelera; los elimina para recuperar espacio inmediatamente. Siempre revisa los resultados del escaneo antes de confirmar la limpieza.
+> La eliminación es **permanente**. No hay papelera de reciclaje. Revisa bien antes de limpiar.
 
----
+## Categorías Detectadas
 
-## 📄 Licencia
+| Categoría | Herramientas |
+|---|---|
+| **Gemini** | Caché de la CLI / API de Google Gemini |
+| **Claude** | Logs y configuración de Anthropic Claude |
+| **IDE Agents** | Cursor, Windsurf, Trae, Roo-Code, Claude-Dev |
+| **Other Tools** | Herramientas de IA no categorizadas |
+| **Node Modules** | Carpetas `node_modules` en proyectos Node.js |
 
-MIT — *Desarrollado para mantener tu sistema de desarrollo ligero y enfocado.*
+## Licencia
+
+MIT — *Desarrollado para mantener tu sistema libre de ruido digital.*

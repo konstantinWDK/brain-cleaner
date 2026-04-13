@@ -70,6 +70,24 @@ class BrainScanner:
         s = round(size_bytes / p, 2)
         return "%s %s" % (s, size_name[i])
 
+    def format_relative_time(self, mtime):
+        """
+        Formats a timestamp into a relative string like '2h', '3d', '1y'.
+        """
+        diff = time.time() - mtime
+        if diff < 60:
+            return "just now"
+        elif diff < 3600:
+            return f"{int(diff // 60)}m"
+        elif diff < 86400:
+            return f"{int(diff // 3600)}h"
+        elif diff < 2592000: # 30 days roughly
+            return f"{int(diff // 86400)}d"
+        elif diff < 31536000: # 365 days
+            return f"{int(diff // 2592000)}mo"
+        else:
+            return f"{int(diff // 31536000)}y"
+
     def find_residues(self, start_path, interrupt_event=None):
         """
         Scans and returns categorized results with sizes.
@@ -78,8 +96,8 @@ class BrainScanner:
         found = {cat: [] for cat in self.categories.keys()}
         found["All"] = []
         
-        for cat, path, size_str, size_bytes in self.scan_stream(start_path, interrupt_event):
-            item = (path, size_str, size_bytes)
+        for cat, path, size_str, size_bytes, mtime in self.scan_stream(start_path, interrupt_event):
+            item = (path, size_str, size_bytes, mtime)
             if cat not in found:
                 found[cat] = []
             found[cat].append(item)
@@ -126,10 +144,15 @@ class BrainScanner:
                                 except Exception:
                                     pass
 
+                            try:
+                                mtime = os.path.getmtime(full_path)
+                            except Exception:
+                                mtime = time.time()
+
                             size_bytes = self.get_dir_size(full_path)
                             size_str = self.format_size(size_bytes)
                             
-                            yield cat, full_path, size_str, size_bytes
+                            yield cat, full_path, size_str, size_bytes, mtime
                             matched_in_this_root.append(d)
                             break 
                 

@@ -90,7 +90,7 @@ class BrainCleanerApp(ctk.CTk):
         ctk.CTkLabel(title_f, text="Brain Cleaner",
                      font=ctk.CTkFont(size=19, weight="bold")
                      ).pack(pady=(0, 2))
-        ctk.CTkLabel(title_f, text="v1.2.5",
+        ctk.CTkLabel(title_f, text="v1.2.6",
                      font=ctk.CTkFont(size=11, slant="italic"), text_color="#a1a1a1"
                      ).pack()
 
@@ -538,8 +538,8 @@ class BrainCleanerApp(ctk.CTk):
         self.update_bubble_selection("All")
 
     def _render_rows(self, items, cat):
-        """Render a list of (path, size_str, size_bytes) result items."""
-        for path, size_str, _ in items:
+        """Render a list of (path, size_str, size_bytes, mtime) result items."""
+        for path, size_str, _, mtime in items:
             var = ctk.BooleanVar(value=False)
 
             wrapper = ctk.CTkFrame(self.results_frame, fg_color="transparent")

@@ -50,7 +50,7 @@ class BrainCleanerCLI:
     def draw_splash(self):
         content = []
         content.append(self.term.cyan(ASCII_ART))
-        content.append(self.term.bold("\n  Welcome to Brain Cleaner CLI v1.2.5"))
+        content.append(self.term.bold("\n  Welcome to Brain Cleaner CLI v1.2.6"))
         content.append("  " + "-" * 40)
         content.append("\n  Select Mode to begin:")
         content.append(self.term.blue("  [1] AI Tools Cleanup"))
@@ -100,13 +100,14 @@ class BrainCleanerCLI:
 
     def _scan_worker(self, path):
         try:
-            for cat, path, size_str, size_bytes in self.scanner.scan_stream(path, self.interrupt_event):
-
+            for cat, path, size_str, size_bytes, mtime in self.scanner.scan_stream(path, self.interrupt_event):
                 self.results.append({
                     'cat': cat,
                     'path': path,
                     'size_str': size_str,
                     'size_bytes': size_bytes,
+                    'mtime': mtime,
+                    'rel_time': self.scanner.format_relative_time(mtime),
                     'deleted': False,
                     'selected': False
                 })
@@ -155,10 +156,18 @@ class BrainCleanerCLI:
         content.append(status_line)
         content.append("-" * self.term.width)
 
-        # List Area
-        list_height = self.term.height - 7
+        # List Area Settings
         visible_results = [r for r in self.results if not r['deleted']]
         marked_count = len([r for r in visible_results if r['selected']])
+        
+        # Summary Line
+        total_to_clean = sum(r['size_bytes'] for r in visible_results)
+        summary_text = f"  {self.term.bold('TOTAL TO CLEAN:')} {self.term.yellow(self.scanner.format_size(total_to_clean))}  |  {self.term.bold('FOUND:')} {len(visible_results)} items"
+        content.append(summary_text)
+        content.append("-" * self.term.width)
+
+        # Draw List
+        list_height = self.term.height - 9
         
         if not visible_results:
             if not self.is_scanning:
@@ -187,15 +196,25 @@ class BrainCleanerCLI:
                 # Formatting
                 cursor_ptr = " > " if is_selected else "   "
                 mark_ptr = "[*]" if is_marked else "[ ]"
-                item_text = f"{mark_ptr} [{res['cat']:<12}] {res['path']}"
+                rel_time = res.get('rel_time', '-')
                 
-                # Trim path if too long
-                available_width = self.term.width - 24
-                if len(item_text) > available_width:
-                    item_text = item_text[:available_width-3] + "..."
+                # Layout Math
+                # [mark] [CATEGORY    ] /path/to/folder    2d ago    10.5 MB
+                cat_str = f"[{res['cat']}]"
                 
-                line = f"{cursor_ptr}{item_text}"
-                line = line.ljust(self.term.width - 12) + self.term.bold(res['size_str'].rjust(10))
+                # Column widths
+                cat_w = 15
+                time_w = 8
+                size_w = 10
+                meta_w = time_w + size_w + 4 # Padding between meta columns
+                
+                path_available = self.term.width - (len(cursor_ptr) + len(mark_ptr) + cat_w + meta_w + 4)
+                path_text = res['path']
+                if len(path_text) > path_available:
+                    path_text = "..." + path_text[-(path_available-3):]
+                
+                line = f"{cursor_ptr}{mark_ptr} {cat_str:<{cat_w}} {path_text:<{path_available}} "
+                line += f"{rel_time.rjust(time_w)}  {self.term.bold(res['size_str'].rjust(size_w))}"
 
                 if is_selected:
                     content.append(self.term.reverse(line))
@@ -293,7 +312,7 @@ class BrainCleanerCLI:
                         if self.delete_all and not self.dry_run:
                             print(self.term.home + self.term.clear + f"[*] Starting automatic deletion in: {self.selected_path}")
                             count = 0
-                            for cat, p, s_str, s_bytes in self.scanner.scan_stream(self.selected_path):
+                            for cat, p, s_str, s_bytes, mtime in self.scanner.scan_stream(self.selected_path):
                                 success, msg = self.scanner.delete_folder(p)
                                 if success:
                                     print(f" [OK] Deleted: {p} ({s_str})")
@@ -315,6 +334,8 @@ class BrainCleanerCLI:
                         return
 
                 elif state == "SCANNING":
+                    visible_results = [r for r in self.results if not r['deleted']]
+                    marked_count = len([r for r in visible_results if r['selected']])
                     self.draw()
                     val = self.term.inkey(timeout=0.1)
                     

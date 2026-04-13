@@ -1,6 +1,6 @@
 {
   "name": "brain-cleaner",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "Professional CLI utility to reclaim disk space by removing residues from AI tools (Gemini, Claude, Cursor) and heavy node_modules folders. Optimized for system performance and digital decluttering.",
   "main": "bin/brain-cleaner.js",
   "bin": {

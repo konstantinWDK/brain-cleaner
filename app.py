@@ -90,7 +90,7 @@ class BrainCleanerApp(ctk.CTk):
         ctk.CTkLabel(title_f, text="Brain Cleaner",
                      font=ctk.CTkFont(size=19, weight="bold")
                      ).pack(pady=(0, 2))
-        ctk.CTkLabel(title_f, text="v1.2.3",
+        ctk.CTkLabel(title_f, text="v1.2.4",
                      font=ctk.CTkFont(size=11, slant="italic"), text_color="#a1a1a1"
                      ).pack()
 

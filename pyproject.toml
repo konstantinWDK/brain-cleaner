@@ -1,6 +1,6 @@
 [project]
 name = "brain-cleaner"
-version = "1.2.3"
+version = "1.2.4"
 description = "System residue cleaner for AI tools and NPM modules"
 authors = [
     {name = "Konstantin", email = "info@webdesignerk.com"},

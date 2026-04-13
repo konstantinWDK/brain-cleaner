@@ -1,9 +1,11 @@
 # Brain Cleaner
 
+![Brain Cleaner Banner](https://braincleaner.dev/og-image.png)
+
 **Language / Idioma:**
 🇪🇸 Español &nbsp;|&nbsp; [🇬🇧 English](https://github.com/konstantinWDK/brain-cleaner/blob/main/README.md)
 
-![Brain Cleaner Demostración de Interfaz](./assets/ui-demo.png)
+![Brain Cleaner UI Mockup](https://braincleaner.dev/mockup.png)
 
 ---
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)

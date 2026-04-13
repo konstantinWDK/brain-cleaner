@@ -1,13 +1,14 @@
 [project]
 name = "brain-cleaner"
-version = "1.2.2"
+version = "1.2.3"
 description = "System residue cleaner for AI tools and NPM modules"
 authors = [
-    {name = "Konstantin", email = "konstantin@webdesignerk.com"},
+    {name = "Konstantin", email = "info@webdesignerk.com"},
 ]
 dependencies = [
     "Pillow",
     "blessed",
+    "customtkinter",
 ]
 readme = "README.md"
 requires-python = ">=3.9"

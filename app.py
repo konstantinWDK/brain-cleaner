@@ -9,6 +9,7 @@ import subprocess
 from scanner import BrainScanner
 from pathlib import Path
 from PIL import Image
+import webbrowser
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -51,6 +52,7 @@ class BrainCleanerApp(ctk.CTk):
         # Category definitions
         self.AI_CATS  = ["Gemini", "Claude", "IDE Agents", "Other Tools"]
         self.NPM_CATS = ["Node Modules"]
+        self.PY_CATS  = ["Python Envs", "Python Envs (Obsolete)"]
 
         # Info slider data
         self.info_states = [
@@ -88,7 +90,7 @@ class BrainCleanerApp(ctk.CTk):
         ctk.CTkLabel(title_f, text="Brain Cleaner",
                      font=ctk.CTkFont(size=19, weight="bold")
                      ).pack(pady=(0, 2))
-        ctk.CTkLabel(title_f, text="v1.2.2",
+        ctk.CTkLabel(title_f, text="v1.2.3",
                      font=ctk.CTkFont(size=11, slant="italic"), text_color="#a1a1a1"
                      ).pack()
 
@@ -133,7 +135,14 @@ class BrainCleanerApp(ctk.CTk):
                            font=ctk.CTkFont(size=12), border_color="#2e7d32",
                            hover_color="#2e7d32", fg_color="#2e7d32",
                            command=self._update_mode_ui
-                           ).grid(row=7, column=0, padx=24, pady=(2, 4), sticky="w")
+                           ).grid(row=7, column=0, padx=24, pady=2, sticky="w")
+
+        ctk.CTkRadioButton(self.sidebar, text="Python Envs",
+                           variable=self.scan_mode_var, value="python",
+                           font=ctk.CTkFont(size=12), border_color="#3776ab",
+                           hover_color="#3776ab", fg_color="#3776ab",
+                           command=self._update_mode_ui
+                           ).grid(row=8, column=0, padx=24, pady=(2, 4), sticky="w")
 
         # ── Bottom Sidebar Controls ───────────────────────────────
         bottom = ctk.CTkFrame(self.sidebar, fg_color="transparent")
@@ -303,6 +312,25 @@ class BrainCleanerApp(ctk.CTk):
                                          font=ctk.CTkFont(size=11))
         self.status_label.pack(side="right", padx=10)
 
+        # Project Links
+        links_f = ctk.CTkFrame(footer, fg_color="transparent")
+        links_f.pack(side="left", padx=20)
+
+        ctk.CTkButton(links_f, text="braincleaner.dev",
+                      font=ctk.CTkFont(size=10, underline=True),
+                      fg_color="transparent", text_color=("#1f538d", "#5da7e6"),
+                      hover_color=("#e0e0e0", "#3a3a3a"),
+                      width=80, height=20,
+                      command=lambda: webbrowser.open("https://braincleaner.dev")
+                      ).pack(side="left", padx=2)
+
+        ctk.CTkButton(links_f, text="⭐ Star on GitHub",
+                      font=ctk.CTkFont(size=10, weight="bold"),
+                      fg_color=("#24292e", "#333333"), hover_color=("#2c3137", "#444444"),
+                      text_color="white", width=100, height=22, corner_radius=6,
+                      command=lambda: webbrowser.open("https://github.com/konstantinwdk/brain-cleaner")
+                      ).pack(side="left", padx=5)
+
         # Log Area
         self.log_textbox = ctk.CTkTextbox(main, height=80, font=ctk.CTkFont(size=10))
         self.log_textbox.grid(row=6, column=0, padx=10, pady=(0, 8), sticky="nsew")
@@ -321,10 +349,14 @@ class BrainCleanerApp(ctk.CTk):
             self.scan_header_frame.configure(fg_color="#1f538d")
             self.scan_header_title.configure(text="AI Tools Cleanup")
             self.scan_header_desc.configure(text="Identify and remove cache, logs, and configs left by AI assistants (Gemini, Claude, Cursor...).")
-        else:
+        elif mode == "npm":
             self.scan_header_frame.configure(fg_color="#2e7d32")
             self.scan_header_title.configure(text="NPM Modules Cleanup")
             self.scan_header_desc.configure(text="Free up space by removing heavy node_modules directories from web projects.")
+        elif mode == "python":
+            self.scan_header_frame.configure(fg_color="#3776ab")
+            self.scan_header_title.configure(text="Python Envs Cleanup")
+            self.scan_header_desc.configure(text="Remove obsolete virtual environments (venv, .venv) from your local projects.")
         self.scan_header_count.configure(text="")
 
     # ── Helpers ───────────────────────────────────────────────────
@@ -347,7 +379,9 @@ class BrainCleanerApp(ctk.CTk):
             "Claude": "#d97757",
             "IDE Agents": "#7c4dff",
             "Other Tools": "#546e7a",
-            "Node Modules": "#2e7d32"
+            "Node Modules": "#2e7d32",
+            "Python Envs": "#3776ab",
+            "Python Envs (Obsolete)": "#d32f2f"
         }.get(cat, "#757575")
 
     # ── Info Slider ───────────────────────────────────────────────
@@ -449,6 +483,10 @@ class BrainCleanerApp(ctk.CTk):
             for c in self.NPM_CATS:
                 results[c] = raw.get(c, [])
                 results["All"] += results[c]
+        elif mode == "python":
+            for c in self.PY_CATS:
+                results[c] = raw.get(c, [])
+                results["All"] += results[c]
         self.scanning_active = False
         self.after(0, lambda: self._finish_scan(results, mode))
 
@@ -471,7 +509,7 @@ class BrainCleanerApp(ctk.CTk):
         self.status_label.configure(text=f"Found {total} items — {total_str}")
         self.log(f"Scan complete. {total} items found ({total_str}).")
 
-        found_cats = [c for c in (self.AI_CATS + self.NPM_CATS) if results.get(c)]
+        found_cats = [c for c in (self.AI_CATS + self.NPM_CATS + self.PY_CATS) if results.get(c)]
         self.create_filter_bubbles(["All"] + found_cats)
 
         count = 0
@@ -482,6 +520,11 @@ class BrainCleanerApp(ctk.CTk):
                 self._render_rows(results[cat], cat)
         elif mode == "npm":
             section_cats = [c for c in self.NPM_CATS if results.get(c)]
+            count = sum(len(results[c]) for c in section_cats)
+            for cat in section_cats:
+                self._render_rows(results[cat], cat)
+        elif mode == "python":
+            section_cats = [c for c in self.PY_CATS if results.get(c)]
             count = sum(len(results[c]) for c in section_cats)
             for cat in section_cats:
                 self._render_rows(results[cat], cat)

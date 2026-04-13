@@ -1,5 +1,6 @@
 import os
 import shutil
+import time
 from pathlib import Path
 
 class BrainScanner:
@@ -28,6 +29,7 @@ class BrainScanner:
                 ".github-copilot",
                 "brain-recordings"
             ],
+            "Python Envs": ["venv", ".venv", "env", ".env", "virtualenv", "pyenv"],
             "Node Modules": ["node_modules"]
         }
         # Flattened list for the walker
@@ -78,8 +80,9 @@ class BrainScanner:
         
         for cat, path, size_str, size_bytes in self.scan_stream(start_path, interrupt_event):
             item = (path, size_str, size_bytes)
-            if cat in found:
-                found[cat].append(item)
+            if cat not in found:
+                found[cat] = []
+            found[cat].append(item)
             found["All"].append(item)
             
         # Sort by path
@@ -107,6 +110,22 @@ class BrainScanner:
                     for cat, patterns in self.categories.items():
                         if d in patterns or any(d.startswith(p) for p in patterns):
                             full_path = os.path.join(root, d)
+                            
+                            # Verify if it's a real Python Virtual Env
+                            if cat == "Python Envs":
+                                cfg_path = os.path.join(full_path, "pyvenv.cfg")
+                                if not os.path.exists(cfg_path):
+                                    continue
+                                
+                                # Check obsolescence (90 days)
+                                try:
+                                    mtime = os.path.getmtime(cfg_path)
+                                    days_old = (time.time() - mtime) / (24 * 3600)
+                                    if days_old > 90:
+                                        cat = "Python Envs (Obsolete)"
+                                except Exception:
+                                    pass
+
                             size_bytes = self.get_dir_size(full_path)
                             size_str = self.format_size(size_bytes)
                             

@@ -1,5 +1,7 @@
 # Brain Cleaner
 
+![Brain Cleaner Banner](https://braincleaner.dev/og-image.png)
+
 [![NPM Version](https://img.shields.io/npm/v/brain-cleaner.svg)](https://www.npmjs.com/package/brain-cleaner)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
@@ -7,105 +9,79 @@
 **Language / Idioma:**
 🇬🇧 English &nbsp;|&nbsp; [🇪🇸 Español](https://github.com/konstantinWDK/brain-cleaner/blob/main/README.es.md)
 
-![Brain Cleaner UI Demo](./assets/ui-demo.png)
+![Brain Cleaner UI Mockup](https://braincleaner.dev/mockup.png)
 
 ---
 
-**Brain Cleaner** is a professional CLI utility designed to reclaim disk space by identifying and removing digital noise:
-- **AI Residue Cleaner** — Finds cache, logs, and config files from Gemini, Claude, Cursor, Windsurf, and more.
-- **NPM Optimization** — Detects and safely deletes heavy `node_modules` folders from your development projects.
-- **Interactive UI** — High-performance terminal interface with granular selection and safety checks.
+## Why Brain Cleaner?
 
-### ⚙️ Technical Architecture
-While distributed via NPM for ease of use, Brain Cleaner is a hybrid tool. The Node.js wrapper automatically:
-1. Detects your local Python environment.
-2. **Auto-installs missing dependencies** (`blessed`, `Pillow`) on first run.
-3. Seamlessly executes the core Python cleaning engine.
+In the modern development era, our systems are constantly cluttered with "digital noise." Every interaction with AI assistants (Gemini, Claude, Cursor), every NPM project, and every Python experiment leaves behind a trail of logs, cache, and heavy virtual environments that quickly eat up hundreds of gigabytes of disk space.
 
-### 🚀 Recommended Installation (Global)
-Install directly from NPM to get the latest stable version:
+**Brain Cleaner was built to solve this.** It provides a professional, high-performance interface to reclaim your disk space by targeting precisely those development residues that standard cleaners miss.
+
+---
+
+## 🚀 Key Features
+
+- **AI Residue Cleaner** — Deep scan for cache, logs, and configs from Gemini, Claude, Cursor, Windsurf, Trae, and more.
+- **NPM Optimization** — Instantly find and safely delete heavy `node_modules` folders from forgotten projects.
+- **Python Env Manager** — Detect obsolete virtual environments (`venv`, `.venv`) that haven't been touched in over 90 days.
+- **Hybrid Power** — The ease of an NPM global install with the high-performance scanning engine of Python.
+- **Interactive UI** — Choice between a sleek Desktop GUI or a professional Command Line Interface (CLI).
+
+---
+
+## ⚙️ Installation
+
+Install globally via NPM to start cleaning immediately:
 
 ```bash
 npm install -g brain-cleaner
 ```
 
-#### Alternative: Install from Source (Python)
-If you prefer to install via Python/Pip directly from the repository:
+### Requirements
+- **Python 3.9+** (Required for the scanning engine).
+- **Node.js 14+**.
 
-```bash
-pip install git+https://github.com/konstantinwdk/brain-cleaner
-```
+---
 
-### 🚀 Requirements
-- **Python 3.9+** is required.
-- **Node.js 14+** (if installing via NPM).
+## 📖 How to Use
 
-## Quick Start
-
-   ```bash
-   cd brain-cleaner
-   ```
-3. **Install the package**:
-   ```bash
-   pip install .
-   ```
-
-### Installation (NPM Mode)
-If you are coming from the Node.js ecosystem, you can install it globally via NPM:
-```bash
-npm install -g brain-cleaner
-```
-*Note: Requires Python 3.9+ installed on your system.*
-
-## Installation
-
-To install this console interface as a global command:
-
-1. Open your terminal in the root directory of the project.
-2. Run:
-   ```bash
-   pip install .
-   ```
-
-## Quick Start
-
-Once installed, you can run the interactive interface from anywhere:
-
+### 1. Launch the Interface
+Simply run the command from any terminal:
 ```bash
 brain-cleaner
 ```
-*Tip: Use the CLI for fast, keyboard-driven system cleaning.*
 
-> [!IMPORTANT]
-> **macOS 26 (Tahoe) Compatibility**: Use Homebrew Python 3.11 or later to avoid "macOS 26 required" errors in GUI mode.
-> ```bash
-> brew install python@3.11 python-tk@3.11
-> python3.11 -m venv .venv
-> source .venv/bin/activate
-> pip install .
-> ```
+### 2. Choose Your Scope
+Select between scanning your **Home** directory, the **Full System**, or a **Custom Folder** in the sidebar.
 
-## Usage
+### 3. Select Mode & Scan
+- **AI Tools**: For logs and cache from AI assistants.
+- **NPM Modules**: For heavy `node_modules`.
+- **Python Envs**: For identifying abandoned virtual environments.
 
-1. **Scope** — Choose `Home`, `Full System` or `Custom Folder` in the sidebar.
-2. **Mode** — Choose between `AI Tools` or `NPM Modules` to set what to scan.
-3. **Scan** — Click `START SCAN`. Results appear in two labeled sections.
-4. **Review** — Click `›` on any row to expand its subfolders. Check/uncheck individual items.
-5. **Clean** — Use `Clean Selected` for marked items or `Clean All (Visible)` for everything in the active filter.
+### 4. Review & Clean
+Expand entries to review subfolders, check individual items, and click **Clean Selected** or **Clean All**.
+
+---
+
+## 🛠 Technical Details
+
+While distributed via NPM, Brain Cleaner is a hybrid tool. The Node.js wrapper automatically:
+1. Detects your local Python environment.
+2. Auto-installs core dependencies (`customtkinter`, `blessed`, `Pillow`) on the first run.
+3. Securely executes the cross-platform cleaning engine.
+
+---
+
+## ⚠️ Safety First
 
 > [!WARNING]
-> Deletion is **permanent**. There is no recycle bin. Review carefully before cleaning.
+> Deletion is **permanent**. Brain Cleaner does not move files to the trash; it deletes them to reclaim space immediately. Always review the scan results before confirming cleanup.
 
-## Detected Categories
+---
 
-| Category | Tools |
-|---|---|
-| **Gemini** | Google Gemini CLI / API cache |
-| **Claude** | Anthropic Claude logs & config |
-| **IDE Agents** | Cursor, Windsurf, Trae, Roo-Code, Claude-Dev |
-| **Other Tools** | Uncategorized AI tools |
-| **Node Modules** | `node_modules` in Node.js projects |
+## 📄 License
 
-## License
-
-MIT — *Developed to keep your system free of digital noise.*
+MIT — *Developed to keep your development system lean and focused.*

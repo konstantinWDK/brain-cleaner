@@ -50,7 +50,7 @@ class BrainCleanerCLI:
     def draw_splash(self):
         content = []
         content.append(self.term.cyan(ASCII_ART))
-        content.append(self.term.bold("\n  Welcome to Brain Cleaner CLI v1.2.4"))
+        content.append(self.term.bold("\n  Welcome to Brain Cleaner CLI v1.2.5"))
         content.append("  " + "-" * 40)
         content.append("\n  Select Mode to begin:")
         content.append(self.term.blue("  [1] AI Tools Cleanup"))
